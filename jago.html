@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Laporan Keuangan Voucher - Real Time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, set, onValue, remove, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        // Firebase configuration - LIVE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOf4bjjOQPCgp3kdioCSwEmNq2GNksv04",
+            authDomain: "ber3lebihbaik.firebaseapp.com",
+            databaseURL: "https://ber3lebihbaik-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ber3lebihbaik",
+            storageBucket: "ber3lebihbaik.firebasestorage.app",
+            messagingSenderId: "819172531554",
+            appId: "1:819172531554:web:0c917f7882a0e3a971a03b"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Make Firebase available globally
+        window.firebase = { database, ref, push, set, onValue, remove, update };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .online-indicator { 
+            width: 10px; 
+            height: 10px; 
+            background: #10b981; 
+            border-radius: 50%; 
+            animation: pulse 2s infinite; 
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .offline { background: #ef4444 !important; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="fixed top-4 right-4 z-50 bg-white rounded-lg shadow-lg p-3 flex items-center space-x-2">
+        <div id="statusIndicator" class="online-indicator"></div>
+        <span id="statusText" class="text-sm font-medium text-gray-700">Online - Real Time</span>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Sistem Voucher</h1>
+                <p class="text-gray-600">Laporan Keuangan Real-Time</p>
+                <div class="mt-2 flex items-center justify-center space-x-2">
+                    <div class="online-indicator"></div>
+                    <span class="text-xs text-green-600">Tersinkron Real-Time</span>
+                </div>
+            </div>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan username">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Masukkan password">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                    Masuk
+                </button>
+            </form>
+            <div id="loginError" class="mt-4 text-red-600 text-sm text-center hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-lg border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Laporan Keuangan Voucher</h1>
+                        <p class="text-sm text-gray-600">Sistem Real-Time Firebase</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="addAgentBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                            + Tambah Agen
+                        </button>
+                        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200">
+                            Keluar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Transaction Form -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Input Transaksi</h2>
+                <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Agen</label>
+                        <select id="agentSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Pilih Agen</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Pengambilan</label>
+                        <input type="date" id="pickupDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Voucher</label>
+                        <select id="voucherType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Pilih Jenis</option>
+                            <option value="V3">V3 (Rp 2.550/lembar)</option>
+                            <option value="V5">V5 (Rp 4.250/lembar)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Lembar</label>
+                        <input type="number" id="quantity" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" min="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Setoran</label>
+                        <input type="date" id="depositDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nominal Setoran</label>
+                        <input type="number" id="depositAmount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" min="0">
+                    </div>
+                    <div class="md:col-span-2 lg:col-span-3">
+                        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                            💾 Simpan ke Firebase
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-600 mb-2">Total Tagihan</h3>
+                    <p id="totalBill" class="text-2xl font-bold text-blue-600">Rp 0</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-600 mb-2">Total Setoran</h3>
+                    <p id="totalDeposit" class="text-2xl font-bold text-green-600">Rp 0</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-600 mb-2">Sisa Tagihan</h3>
+                    <p id="remainingBill" class="text-2xl font-bold text-red-600">Rp 0</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-sm font-medium text-gray-600 mb-2">Total Agen</h3>
+                    <p id="totalAgents" class="text-2xl font-bold text-purple-600">0</p>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Daftar Transaksi Real-Time</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agen</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Ambil</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voucher</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tagihan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Setor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Setoran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTable" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Agent Summary -->
+            <div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Ringkasan Per Agen</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Agen</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Tagihan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Setoran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa Tagihan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentSummaryTable" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Agent Modal -->
+    <div id="addAgentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Tambah Agen Baru</h3>
+            <form id="addAgentForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Agen</label>
+                    <input type="text" id="newAgentName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200">
+                        Tambah ke Firebase
+                    </button>
+                    <button type="button" id="cancelAddAgent" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition duration-200">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl mx-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Edit Transaksi</h3>
+            <form id="editForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="hidden" id="editTransactionId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Agen</label>
+                    <select id="editAgent" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Pengambilan</label>
+                    <input type="date" id="editPickupDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Voucher</label>
+                    <select id="editVoucherType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        <option value="V3">V3 (Rp 2.550/lembar)</option>
+                        <option value="V5">V5 (Rp 4.250/lembar)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Lembar</label>
+                    <input type="number" id="editQuantity" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" min="1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Setoran</label>
+                    <input type="date" id="editDepositDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nominal Setoran</label>
+                    <input type="number" id="editDepositAmount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" min="0">
+                </div>
+                <div class="md:col-span-2 flex space-x-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200">
+                        Update ke Firebase
+                    </button>
+                    <button type="button" id="cancelEdit" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition duration-200">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initial data
+        const initialAgents = [
+            'RADIAH', 'IBU ROSTINI', 'IBU MILA', 'MIRA', 'MAMA ARHAM', 
+            'JUSRAWIRA', 'IBU PUTRI', 'BANG ADI', 'IBU NAILA', 'IBU HASNA',
+            'IBU ASNITA', 'IBU AYU', 'IBU RIKA', 'PAK RISMAN', 'AFZAL',
+            'PAK JUSRIADI', 'IBU IRA', 'PAK SULAEMAN', 'IBU DILLA'
+        ];
+
+        // Voucher prices
+        const voucherPrices = {
+            'V3': 2550,
+            'V5': 4250
+        };
+
+        // Application state
+        let agents = [...initialAgents];
+        let transactions = [];
+        let isLoggedIn = false;
+        let isOnline = false;
+
+        // Firebase references
+        let agentsRef, transactionsRef;
+
+        // Initialize Firebase listeners
+        function initializeFirebase() {
+            if (!window.firebase) {
+                console.error('Firebase not loaded');
+                showOfflineStatus();
+                // Load agents locally if Firebase fails
+                agents = [...initialAgents];
+                populateAgentSelects();
+                updateSummaryCards();
+                return;
+            }
+
+            try {
+                agentsRef = window.firebase.ref(window.firebase.database, 'agents');
+                transactionsRef = window.firebase.ref(window.firebase.database, 'transactions');
+
+                // Initialize agents if not exists
+                window.firebase.onValue(agentsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (!data || data.length === 0) {
+                        // Set initial agents to Firebase
+                        console.log('Setting initial agents to Firebase...');
+                        window.firebase.set(agentsRef, initialAgents);
+                        agents = [...initialAgents];
+                    } else {
+                        // Check if data is array or object
+                        if (Array.isArray(data)) {
+                            agents = data.filter(agent => agent && agent.trim() !== '');
+                        } else {
+                            // Convert object to array if needed
+                            agents = Object.values(data).filter(agent => agent && agent.trim() !== '');
+                        }
+                        
+                        // Fallback to initial agents if empty
+                        if (agents.length === 0) {
+                            agents = [...initialAgents];
+                            window.firebase.set(agentsRef, initialAgents);
+                        }
+                    }
+                    console.log('Loaded agents:', agents);
+                    populateAgentSelects();
+                    updateSummaryCards();
+                    showOnlineStatus();
+                }, (error) => {
+                    console.error('Error loading agents:', error);
+                    // Fallback to local agents
+                    agents = [...initialAgents];
+                    populateAgentSelects();
+                    updateSummaryCards();
+                    showOfflineStatus();
+                });
+
+                // Listen to transactions
+                window.firebase.onValue(transactionsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    transactions = data ? Object.keys(data).map(key => ({...data[key], id: key})) : [];
+                    renderTransactions();
+                    renderAgentSummary();
+                    updateSummaryCards();
+                    showOnlineStatus();
+                }, (error) => {
+                    console.error('Error loading transactions:', error);
+                    showOfflineStatus();
+                });
+
+                isOnline = true;
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                showOfflineStatus();
+                // Load agents locally if Firebase fails
+                agents = [...initialAgents];
+                populateAgentSelects();
+                updateSummaryCards();
+            }
+        }
+
+        // Connection status
+        function showOnlineStatus() {
+            isOnline = true;
+            document.getElementById('statusIndicator').classList.remove('offline');
+            document.getElementById('statusText').textContent = 'Online - Real Time';
+        }
+
+        function showOfflineStatus() {
+            isOnline = false;
+            document.getElementById('statusIndicator').classList.add('offline');
+            document.getElementById('statusText').textContent = 'Offline - Demo Mode';
+        }
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === 'sahrul' && password === 'afzal') {
+                isLoggedIn = true;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('fade-in');
+                initializeFirebase();
+            } else {
+                document.getElementById('loginError').textContent = 'Username atau password salah!';
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            isLoggedIn = false;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+        });
+
+        // Populate agent selects
+        function populateAgentSelects() {
+            const selects = [document.getElementById('agentSelect'), document.getElementById('editAgent')];
+            
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">Pilih Agen</option>';
+                agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent;
+                    option.textContent = agent;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Add agent functionality
+        document.getElementById('addAgentBtn').addEventListener('click', function() {
+            document.getElementById('addAgentModal').classList.remove('hidden');
+            document.getElementById('addAgentModal').classList.add('flex');
+        });
+
+        document.getElementById('cancelAddAgent').addEventListener('click', function() {
+            document.getElementById('addAgentModal').classList.add('hidden');
+            document.getElementById('addAgentModal').classList.remove('flex');
+            document.getElementById('newAgentName').value = '';
+        });
+
+        document.getElementById('addAgentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newAgentName = document.getElementById('newAgentName').value.trim().toUpperCase();
+            
+            if (newAgentName && !agents.includes(newAgentName)) {
+                const updatedAgents = [...agents, newAgentName];
+                
+                if (isOnline && window.firebase) {
+                    window.firebase.set(agentsRef, updatedAgents);
+                } else {
+                    agents = updatedAgents;
+                    populateAgentSelects();
+                    updateSummaryCards();
+                }
+                
+                document.getElementById('addAgentModal').classList.add('hidden');
+                document.getElementById('addAgentModal').classList.remove('flex');
+                document.getElementById('newAgentName').value = '';
+                alert('Agen berhasil ditambahkan!');
+            } else {
+                alert('Nama agen sudah ada atau kosong!');
+            }
+        });
+
+        // Transaction form submission
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const agent = document.getElementById('agentSelect').value;
+            const pickupDate = document.getElementById('pickupDate').value;
+            const voucherType = document.getElementById('voucherType').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const depositDate = document.getElementById('depositDate').value;
+            const depositAmount = parseFloat(document.getElementById('depositAmount').value) || 0;
+            
+            const totalBill = quantity * voucherPrices[voucherType];
+            const remainingBill = totalBill - depositAmount;
+            
+            const transaction = {
+                agent,
+                pickupDate,
+                voucherType,
+                quantity,
+                totalBill,
+                depositDate,
+                depositAmount,
+                remainingBill,
+                createdAt: new Date().toISOString()
+            };
+            
+            if (isOnline && window.firebase) {
+                window.firebase.push(transactionsRef, transaction);
+            } else {
+                transaction.id = Date.now().toString();
+                transactions.push(transaction);
+                renderTransactions();
+                renderAgentSummary();
+                updateSummaryCards();
+            }
+            
+            // Reset form
+            document.getElementById('transactionForm').reset();
+            alert('Transaksi berhasil disimpan ke Firebase!');
+        });
+
+        // Render transactions table
+        function renderTransactions() {
+            const tbody = document.getElementById('transactionTable');
+            tbody.innerHTML = '';
+            
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const canDelete = new Date() - new Date(transaction.createdAt) < 24 * 60 * 60 * 1000; // 24 hours
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${transaction.agent}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(transaction.pickupDate)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.voucherType} (${transaction.quantity} lembar)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.quantity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${formatCurrency(transaction.totalBill)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.depositDate ? formatDate(transaction.depositDate) : '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${formatCurrency(transaction.depositAmount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.remainingBill > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(transaction.remainingBill)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editTransaction('${transaction.id}')" class="text-blue-600 hover:text-blue-900 mr-2">Edit</button>
+                        ${canDelete ? `<button onclick="deleteTransaction('${transaction.id}')" class="text-red-600 hover:text-red-900">Hapus</button>` : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Edit transaction
+        function editTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+            
+            document.getElementById('editTransactionId').value = transaction.id;
+            document.getElementById('editAgent').value = transaction.agent;
+            document.getElementById('editPickupDate').value = transaction.pickupDate;
+            document.getElementById('editVoucherType').value = transaction.voucherType;
+            document.getElementById('editQuantity').value = transaction.quantity;
+            document.getElementById('editDepositDate').value = transaction.depositDate || '';
+            document.getElementById('editDepositAmount').value = transaction.depositAmount || '';
+            
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        // Edit form submission
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('editTransactionId').value;
+            const agent = document.getElementById('editAgent').value;
+            const pickupDate = document.getElementById('editPickupDate').value;
+            const voucherType = document.getElementById('editVoucherType').value;
+            const quantity = parseInt(document.getElementById('editQuantity').value);
+            const depositDate = document.getElementById('editDepositDate').value;
+            const depositAmount = parseFloat(document.getElementById('editDepositAmount').value) || 0;
+            
+            const totalBill = quantity * voucherPrices[voucherType];
+            const remainingBill = totalBill - depositAmount;
+            
+            const updatedTransaction = {
+                agent,
+                pickupDate,
+                voucherType,
+                quantity,
+                totalBill,
+                depositDate,
+                depositAmount,
+                remainingBill,
+                createdAt: transactions.find(t => t.id === id)?.createdAt || new Date().toISOString()
+            };
+            
+            if (isOnline && window.firebase) {
+                const transactionRef = window.firebase.ref(window.firebase.database, `transactions/${id}`);
+                window.firebase.update(transactionRef, updatedTransaction);
+            } else {
+                const transactionIndex = transactions.findIndex(t => t.id === id);
+                if (transactionIndex !== -1) {
+                    transactions[transactionIndex] = { ...updatedTransaction, id };
+                    renderTransactions();
+                    renderAgentSummary();
+                    updateSummaryCards();
+                }
+            }
+            
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+            alert('Transaksi berhasil diperbarui di Firebase!');
+        });
+
+        // Cancel edit
+        document.getElementById('cancelEdit').addEventListener('click', function() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+        });
+
+        // Delete transaction (only within 24 hours)
+        function deleteTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            const canDelete = new Date() - new Date(transaction.createdAt) < 24 * 60 * 60 * 1000;
+            
+            if (!canDelete) {
+                alert('Transaksi yang sudah lewat 24 jam tidak dapat dihapus!');
+                return;
+            }
+            
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                if (isOnline && window.firebase) {
+                    const transactionRef = window.firebase.ref(window.firebase.database, `transactions/${id}`);
+                    window.firebase.remove(transactionRef);
+                } else {
+                    transactions = transactions.filter(t => t.id !== id);
+                    renderTransactions();
+                    renderAgentSummary();
+                    updateSummaryCards();
+                }
+                alert('Transaksi berhasil dihapus dari Firebase!');
+            }
+        }
+
+        // Render agent summary
+        function renderAgentSummary() {
+            const tbody = document.getElementById('agentSummaryTable');
+            tbody.innerHTML = '';
+            
+            const agentSummary = {};
+            
+            // Initialize all agents
+            agents.forEach(agent => {
+                agentSummary[agent] = {
+                    totalBill: 0,
+                    totalDeposit: 0,
+                    remainingBill: 0
+                };
+            });
+            
+            // Calculate summary
+            transactions.forEach(transaction => {
+                if (agentSummary[transaction.agent]) {
+                    agentSummary[transaction.agent].totalBill += transaction.totalBill;
+                    agentSummary[transaction.agent].totalDeposit += transaction.depositAmount;
+                    agentSummary[transaction.agent].remainingBill += transaction.remainingBill;
+                }
+            });
+            
+            // Render summary
+            Object.entries(agentSummary).forEach(([agent, summary]) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${agent}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${formatCurrency(summary.totalBill)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${formatCurrency(summary.totalDeposit)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${summary.remainingBill > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(summary.remainingBill)}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update summary cards
+        function updateSummaryCards() {
+            const totalBill = transactions.reduce((sum, t) => sum + t.totalBill, 0);
+            const totalDeposit = transactions.reduce((sum, t) => sum + t.depositAmount, 0);
+            const remainingBill = totalBill - totalDeposit;
+            
+            document.getElementById('totalBill').textContent = formatCurrency(totalBill);
+            document.getElementById('totalDeposit').textContent = formatCurrency(totalDeposit);
+            document.getElementById('remainingBill').textContent = formatCurrency(remainingBill);
+            document.getElementById('totalAgents').textContent = agents.length;
+        }
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Make functions global for onclick handlers
+        window.editTransaction = editTransaction;
+        window.deleteTransaction = deleteTransaction;
+
+        // Initialize with offline mode
+        showOfflineStatus();
+    </script>
+
+    <!-- Firebase Setup Instructions -->
+    <div style="display: none;">
+        <!-- 
+        INSTRUKSI SETUP FIREBASE:
+        
+        1. Buka https://console.firebase.google.com
+        2. Klik "Create a project" atau "Add project"
+        3. Beri nama project (contoh: voucher-system-sahrul)
+        4. Aktifkan Google Analytics (opsional)
+        5. Klik "Create project"
+        
+        6. Di dashboard Firebase:
+           - Klik "Realtime Database" di menu kiri
+           - Klik "Create Database"
+           - Pilih lokasi (Singapore untuk Indonesia)
+           - Pilih "Start in test mode" (untuk development)
+           - Klik "Enable"
+        
+        7. Klik ikon gear (Settings) > Project settings
+        8. Scroll ke bawah, klik "Add app" > pilih Web (</>) 
+        9. Beri nama app (contoh: voucher-web)
+        10. Copy konfigurasi Firebase yang muncul
+        
+        11. Ganti bagian firebaseConfig di kode ini dengan config Anda:
+            const firebaseConfig = {
+                apiKey: "your-api-key-here",
+                authDomain: "your-project.firebaseapp.com",
+                databaseURL: "https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "your-project-id",
+                storageBucket: "your-project.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "your-app-id"
+            };
+        
+        12. Upload file HTML ini ke hosting atau buka langsung di browser
+        13. Data akan tersinkron real-time antar semua perangkat!
+        
+        KEAMANAN:
+        - Untuk production, ubah rules database di Firebase Console:
+          {
+            "rules": {
+              ".read": "auth != true",
+              ".write": "auth != true"
+            }
+          }
+        - Tambahkan Firebase Authentication untuk keamanan lebih baik
+        -->
+    </div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d4ea90469e3e0c',t:'MTc1NDg4NTc3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
