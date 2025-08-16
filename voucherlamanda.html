@@ -34,45 +34,14 @@
 
     /* Rekap Styling */
     .rekap-box {
-      display: flex;
-      justify-content: space-around;
-      margin: 20px 0;
-      padding: 15px;
-      background: #f0f8ff;
-      border-radius: 8px;
-      font-family: sans-serif;
-      flex-wrap: wrap;
-      gap: 10px;
+      display: flex; justify-content: space-around; margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 8px; font-family: sans-serif; flex-wrap: wrap; gap: 10px;
     }
-    .rekap-item {
-      text-align: center;
-      flex: 1;
-      min-width: 200px;
-    }
-    .rekap-item h4 {
-      margin: 0 0 5px 0;
-      color: #2c3e50;
-      font-size: 14px;
-    }
-    .rekap-item p {
-      margin: 5px 0;
-      font-size: 18px;
-      font-weight: bold;
-      color: #27ae60;
-    }
-    .filter-section {
-      margin: 15px 0;
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .filter-section label {
-      margin: 0 5px;
-    }
-    .filter-section input, .filter-section button {
-      margin: 5px;
-    }
+    .rekap-item { text-align: center; flex: 1; min-width: 200px; }
+    .rekap-item h4 { margin: 0 0 5px 0; color: #2c3e50; font-size: 14px; }
+    .rekap-item p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #27ae60; }
+    .filter-section { margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center; }
+    .filter-section label { margin: 0 5px; }
+    .filter-section input, .filter-section button { margin: 5px; }
   </style>
 </head>
 <body>
@@ -86,6 +55,9 @@
 </div>
 
 <div id="app" class="container hidden">
+  <div style="text-align: right; font-size: 14px; color: #555; margin-bottom: 10px;">
+    Masuk sebagai: <strong id="currentUserDisplay"></strong>
+  </div>
   <h1>Pembukuan Agen Distribusi</h1>
   <button class="logout" onclick="logout()">Logout</button>
   <div class="tab">
@@ -226,13 +198,36 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  // Cek apakah pengguna admin
+  function isUserAdmin() {
+    return localStorage.getItem('userRole') === 'admin';
+  }
+
   function login() {
     const user = document.getElementById('username').value;
     const pass = document.getElementById('password').value;
-    if (user === 'bilal' && pass === 'radiah') {
+
+    let isValid = false;
+    let role = '';
+
+    if (user === 'andi' && pass === 'paswordx') {
+      isValid = true;
+      role = 'admin';
+    } else if (user === 'risman' && pass === 'sahrul') {
+      isValid = true;
+      role = 'user';
+    } else if (user === 'anto' && pass === 'afzal') {
+      isValid = true;
+      role = 'user';
+    }
+
+    if (isValid) {
       localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('username', user);
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('currentUserDisplay').textContent = user;
       loadAgents();
       loadStok();
       loadTransactions();
@@ -245,6 +240,8 @@
   function logout() {
     if (confirm("Yakin ingin logout?")) {
       localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('username');
       document.getElementById('app').classList.add('hidden');
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('username').value = '';
@@ -256,6 +253,7 @@
     if (localStorage.getItem('isLoggedIn') === 'true') {
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('currentUserDisplay').textContent = localStorage.getItem('username');
       loadAgents();
       loadStok();
       loadTransactions();
@@ -271,7 +269,6 @@
     document.getElementById(tabName).style.display = "block";
     if (evt) evt.currentTarget.className += " active";
 
-    // Muat rekap otomatis saat buka tab Rekap
     if (tabName === 'Rekap') {
       loadRekap();
     }
@@ -320,9 +317,6 @@
   let transactions = [];
   let stok = { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
   let editMode = false;
-
-  // Fungsi lainnya (submitPengambilan, submitPenyetoran, edit, delete, dll) tetap sama
-  // ... (kode tetap, tidak berubah)
 
   function submitPengambilan() {
     const agentId = document.getElementById('agentSelect').value;
@@ -405,31 +399,14 @@
     openTab(null, 'Transaksi');
   }
 
- function deleteTransaction(id) {
-  // 🔒 Minta password dulu
-  const password = prompt("🔐 Masukkan password admin untuk hapus transaksi:\n\n(Hanya Andi yang boleh hapus!)");
-
-  // 💡 Ganti password ini dengan yang RAHASIA (jangan beri tahu orang lain!)
-  const adminPassword = "L@m4nd42025"; // 🔁 Ganti dengan password pilihanmu!
-
-  if (password === adminPassword) {
-    // Jika password benar, tanya konfirmasi
-    if (confirm("⚠️ Yakin ingin menghapus transaksi ini?")) {
-      db.ref('transactions').child(id).remove()
-        .then(() => {
-          alert("🗑️ Transaksi berhasil dihapus.");
-          loadTransactions();
-        })
-        .catch(err => {
-          alert("❌ Gagal hapus: " + err.message);
-        });
+  function deleteTransaction(id) {
+    if (confirm("Hapus transaksi ini?")) {
+      db.ref('transactions').child(id).remove().then(() => {
+        alert("Transaksi dihapus.");
+        loadTransactions();
+      });
     }
-  } else if (password !== null) {
-    // Jika password salah (dan user tidak tekan Batal)
-    alert("❌ Password salah! Akses hapus ditolak.");
   }
-  // Jika tekan "Batal", tidak ada aksi
-}
 
   function enterEditMode(id) {
     editMode = true;
@@ -504,20 +481,16 @@
         transactions.push({ id: key, ...data[key] });
       }
       transactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      // Update rekap jika tab Rekap sedang aktif
       if (document.getElementById('Rekap').style.display === 'block') {
         loadRekap();
       }
     });
   }
 
-  // Fungsi baru: Hitung dan filter rekap
   function filterRekap() {
     const tglAwal = document.getElementById('filterTglAwal').value;
     const tglAkhir = document.getElementById('filterTglAkhir').value;
-
     let filtered = transactions;
-
     if (tglAwal) {
       filtered = filtered.filter(t => {
         const tgl = t.tglAmbil || t.tglSetor;
@@ -530,9 +503,7 @@
         return tgl && tgl <= tglAkhir;
       });
     }
-
     updateRekapBox(filtered);
-    // Tetap tampilkan rekap tabel seperti sebelumnya
     showRekapTable(filtered);
   }
 
@@ -546,13 +517,8 @@
   function updateRekapBox(transList) {
     let totalTagihanBelumLunas = 0;
     let totalSetoran = 0;
-
     const agentBalance = {};
-
-    // Inisialisasi saldo
     agents.forEach(a => agentBalance[a] = 0);
-
-    // Hitung saldo bersih (tagihan - setoran)
     transList.forEach(t => {
       if (t.type === 'ambil') {
         agentBalance[t.agentName] += t.tagihan;
@@ -561,14 +527,11 @@
         totalSetoran += t.nominalSetor;
       }
     });
-
-    // Total tagihan belum lunas = yang masih punya sisa hutang
     for (let name in agentBalance) {
       if (agentBalance[name] > 0) {
         totalTagihanBelumLunas += agentBalance[name];
       }
     }
-
     document.getElementById('total-tagihan').textContent = formatRupiah(totalTagihanBelumLunas);
     document.getElementById('total-setoran').textContent = formatRupiah(totalSetoran);
   }
@@ -577,14 +540,12 @@
     let html = '<h3>Rekap Per Agen (Tagihan vs Setoran)</h3>';
     const agentRecap = {};
     agents.forEach(name => { agentRecap[name] = { tagihan: 0, setoran: 0 }; });
-
     transList.forEach(t => {
       const name = t.agentName;
       if (!agentRecap[name]) agentRecap[name] = { tagihan: 0, setoran: 0 };
       if (t.type === 'ambil') agentRecap[name].tagihan += (parseInt(t.tagihan) || 0);
       if (t.type === 'setor') agentRecap[name].setoran += (parseInt(t.nominalSetor) || 0);
     });
-
     html += `<table><tr><th>Agen</th><th>Total Tagihan</th><th>Total Setoran</th><th>Sisa Hutang</th></tr>`;
     for (let name in agentRecap) {
       const r = agentRecap[name];
@@ -603,7 +564,11 @@
       const v3 = t.v3 || '-';
       const v5 = t.v5 || '-';
       const nominal = t.type === 'ambil' ? formatRupiah(t.tagihan || 0) : formatRupiah(t.nominalSetor || 0);
-      const action = t.id ? `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button><button class="delete" onclick="deleteTransaction('${t.id}')">Hapus</button>` : '';
+      const editBtn = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>`;
+      const deleteBtn = isUserAdmin()
+        ? `<button class="delete" onclick="deleteTransaction('${t.id}')">Hapus</button>`
+        : '';
+      const action = t.id ? `${editBtn} ${deleteBtn}` : '';
       html += `<tr><td>${date}</td><td>${t.agentName}</td><td>${jenis}</td><td>${v3}</td><td>${v5}</td><td>${nominal}</td><td>${action}</td></tr>`;
     });
     html += '</table>';
@@ -611,12 +576,9 @@
   }
 
   function loadRekap() {
-    // Set tanggal default (hari ini)
     const today = new Date().toISOString().split("T")[0];
     if (!document.getElementById('filterTglAwal').value) document.getElementById('filterTglAwal').value = today;
     if (!document.getElementById('filterTglAkhir').value) document.getElementById('filterTglAkhir').value = today;
-
-    // Muat semua transaksi & tampilkan rekap
     updateRekapBox(transactions);
     showRekapTable(transactions);
   }
@@ -626,12 +588,20 @@
       const data = snap.val();
       const list = document.getElementById('notesList');
       list.innerHTML = '';
+      const isAdmin = isUserAdmin();
       if (data) {
         const notes = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
         notes.forEach(n => {
           const div = document.createElement('div');
           div.className = 'note-item';
-          div.innerHTML = `<div>${n.text.replace(/\n/g, '<br>')}</div><div class="note-footer">Tanggal: ${new Date(n.timestamp).toLocaleString()}</div><button class="delete" onclick="deleteNote('${n.id}')">Hapus</button>`;
+          const deleteButton = isAdmin
+            ? `<button class="delete" onclick="deleteNote('${n.id}')">Hapus</button>`
+            : '';
+          div.innerHTML = `
+            <div>${n.text.replace(/\n/g, '<br>')}</div>
+            <div class="note-footer">Tanggal: ${new Date(n.timestamp).toLocaleString()}</div>
+            ${deleteButton}
+          `;
           list.appendChild(div);
         });
       } else {
@@ -653,5 +623,3 @@
 </script>
 </body>
 </html>
-
-
