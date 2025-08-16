@@ -405,14 +405,31 @@
     openTab(null, 'Transaksi');
   }
 
-  function deleteTransaction(id) {
-    if (confirm("Hapus transaksi ini?")) {
-      db.ref('transactions').child(id).remove().then(() => {
-        alert("Transaksi dihapus.");
-        loadTransactions();
-      });
+ function deleteTransaction(id) {
+  // 🔒 Minta password dulu
+  const password = prompt("🔐 Masukkan password admin untuk hapus transaksi:\n\n(Hanya Andi yang boleh hapus!)");
+
+  // 💡 Ganti password ini dengan yang RAHASIA (jangan beri tahu orang lain!)
+  const adminPassword = "L@m4nd42025"; // 🔁 Ganti dengan password pilihanmu!
+
+  if (password === adminPassword) {
+    // Jika password benar, tanya konfirmasi
+    if (confirm("⚠️ Yakin ingin menghapus transaksi ini?")) {
+      db.ref('transactions').child(id).remove()
+        .then(() => {
+          alert("🗑️ Transaksi berhasil dihapus.");
+          loadTransactions();
+        })
+        .catch(err => {
+          alert("❌ Gagal hapus: " + err.message);
+        });
     }
+  } else if (password !== null) {
+    // Jika password salah (dan user tidak tekan Batal)
+    alert("❌ Password salah! Akses hapus ditolak.");
   }
+  // Jika tekan "Batal", tidak ada aksi
+}
 
   function enterEditMode(id) {
     editMode = true;
@@ -636,4 +653,5 @@
 </script>
 </body>
 </html>
+
 
