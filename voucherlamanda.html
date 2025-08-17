@@ -347,15 +347,16 @@
         alert("Transaksi berhasil diperbarui!");
         exitEditMode();
         loadTransactions();
+        loadStok(); // Muat ulang stok
       });
     } else {
-      const newRef = db.ref('transactions').push();
-      newRef.set(trans).then(() => {
-        stok.keluarV3 += v3;
-        stok.keluarV5 += v5;
-        db.ref('stok').update(stok);
+      db.ref('transactions').push(trans).then(() => {
         alert("Pengambilan berhasil dicatat!");
         resetForm();
+        loadStok(); // Pastikan stok terbaru
+      }).catch(err => {
+        console.error("Gagal menyimpan transaksi:", err);
+        alert("Gagal menyimpan data.");
       });
     }
   }
@@ -381,10 +382,12 @@
         loadTransactions();
       });
     } else {
-      const newRef = db.ref('transactions').push();
-      newRef.set(trans).then(() => {
+      db.ref('transactions').push(trans).then(() => {
         alert("Penyetoran berhasil dicatat!");
         resetForm();
+      }).catch(err => {
+        console.error("Gagal menyimpan setoran:", err);
+        alert("Gagal menyimpan data.");
       });
     }
   }
@@ -412,6 +415,7 @@
       db.ref('transactions').child(id).remove().then(() => {
         alert("Transaksi dihapus.");
         loadTransactions();
+        loadStok(); // Update stok
       });
     }
   }
@@ -487,9 +491,10 @@
     if (confirm(`Simpan stok awal baru?\nV3: ${v3}, V5: ${v5}`)) {
       stok.v3 = v3;
       stok.v5 = v5;
-      db.ref('stok').update(stok).then(() => {
+      db.ref('stok').update({ v3, v5 }).then(() => {
         alert("Stok awal berhasil diperbarui!");
         exitEditStok();
+        loadStok(); // Refresh tampilan
       }).catch(err => {
         console.error("Gagal update stok:", err);
         alert("Gagal menyimpan ke database.");
@@ -515,20 +520,43 @@
   }
 
   function loadStok() {
-    db.ref('stok').on('value', (snap) => {
-      const data = snap.val() || { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
-      stok = data;
-      document.getElementById('awalV3').textContent = data.v3;
-      document.getElementById('awalV5').textContent = data.v5;
-      document.getElementById('keluarV3').textContent = data.keluarV3;
-      document.getElementById('keluarV5').textContent = data.keluarV5;
-      document.getElementById('sisaV3').textContent = data.v3 - data.keluarV3;
-      document.getElementById('sisaV5').textContent = data.v5 - data.keluarV5;
+    db.ref('stok').once('value').then(snap => {
+      const data = snap.val() || { v3: 0, v5: 0 };
+      stok.v3 = data.v3 || 0;
+      stok.v5 = data.v5 || 0;
+
+      return db.ref('transactions').once('value');
+    }).then(snap => {
+      const trans = snap.val();
+      let keluarV3 = 0;
+      let keluarV5 = 0;
+
+      if (trans) {
+        for (let key in trans) {
+          const t = trans[key];
+          if (t.type === 'ambil') {
+            keluarV3 += parseInt(t.v3) || 0;
+            keluarV5 += parseInt(t.v5) || 0;
+          }
+        }
+      }
+
+      stok.keluarV3 = keluarV3;
+      stok.keluarV5 = keluarV5;
+
+      document.getElementById('awalV3').textContent = stok.v3;
+      document.getElementById('awalV5').textContent = stok.v5;
+      document.getElementById('keluarV3').textContent = keluarV3;
+      document.getElementById('keluarV5').textContent = keluarV5;
+      document.getElementById('sisaV3').textContent = stok.v3 - keluarV3;
+      document.getElementById('sisaV5').textContent = stok.v5 - keluarV5;
 
       if (!editStokMode) {
-        document.getElementById('stokAwalV3').value = data.v3;
-        document.getElementById('stokAwalV5').value = data.v5;
+        document.getElementById('stokAwalV3').value = stok.v3;
+        document.getElementById('stokAwalV5').value = stok.v5;
       }
+    }).catch(err => {
+      console.error("Error loading stok:", err);
     });
   }
 
