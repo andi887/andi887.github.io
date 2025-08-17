@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -142,15 +141,23 @@
   <!-- Stok -->
   <div id="Stok" class="tabcontent">
     <h2>Manajemen Stok</h2>
+
+    <!-- Tombol Edit Stok Awal -->
+    <div class="form-group">
+      <button id="editStokBtn" class="edit" onclick="enableEditStok()">Edit Stok Awal</button>
+      <button id="saveStokBtn" class="primary hidden" onclick="saveStokAwal()">Simpan Stok Awal</button>
+      <button id="cancelStokBtn" class="hidden" onclick="cancelEditStok()">Batal</button>
+    </div>
+
     <div class="form-group">
       <label>Stok Awal V3:</label>
-      <input type="number" id="stokAwalV3" value="0" />
+      <input type="number" id="stokAwalV3" value="0" disabled />
     </div>
     <div class="form-group">
       <label>Stok Awal V5:</label>
-      <input type="number" id="stokAwalV5" value="0" />
+      <input type="number" id="stokAwalV5" value="0" disabled />
     </div>
-    <button class="primary" onclick="updateStokAwal()">Simpan Stok Awal</button>
+
     <table id="stokTable">
       <tr><th>Item</th><th>V3</th><th>V5</th></tr>
       <tr><td>Stok Awal</td><td id="awalV3">0</td><td id="awalV5">0</td></tr>
@@ -317,6 +324,7 @@
   let transactions = [];
   let stok = { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
   let editMode = false;
+  let editStokMode = false;
 
   function submitPengambilan() {
     const agentId = document.getElementById('agentSelect').value;
@@ -449,15 +457,61 @@
     document.getElementById('tglSetor').value = '';
   }
 
-  function updateStokAwal() {
+  // === FITUR EDIT STOK AWAL ===
+  function enableEditStok() {
+    if (!isUserAdmin()) {
+      alert("Hanya admin yang bisa mengedit stok awal.");
+      return;
+    }
+    if (!confirm("Anda yakin ingin mengedit stok awal? Pastikan data sudah benar.")) return;
+
+    editStokMode = true;
+    document.getElementById('stokAwalV3').disabled = false;
+    document.getElementById('stokAwalV5').disabled = false;
+    document.getElementById('editStokBtn').classList.add('hidden');
+    document.getElementById('saveStokBtn').classList.remove('hidden');
+    document.getElementById('cancelStokBtn').classList.remove('hidden');
+  }
+
+  function saveStokAwal() {
+    if (!editStokMode) return;
+
     const v3 = parseInt(document.getElementById('stokAwalV3').value) || 0;
     const v5 = parseInt(document.getElementById('stokAwalV5').value) || 0;
-    stok.v3 = v3;
-    stok.v5 = v5;
-    stok.keluarV3 = stok.keluarV3 || 0;
-    stok.keluarV5 = stok.keluarV5 || 0;
-    db.ref('stok').update(stok);
-    alert("Stok awal disimpan!");
+
+    if (v3 < stok.keluarV3 || v5 < stok.keluarV5) {
+      alert("Stok awal tidak boleh kurang dari jumlah barang keluar!");
+      return;
+    }
+
+    if (confirm(`Simpan stok awal baru?\nV3: ${v3}, V5: ${v5}`)) {
+      stok.v3 = v3;
+      stok.v5 = v5;
+      db.ref('stok').update(stok).then(() => {
+        alert("Stok awal berhasil diperbarui!");
+        exitEditStok();
+      }).catch(err => {
+        console.error("Gagal update stok:", err);
+        alert("Gagal menyimpan ke database.");
+      });
+    }
+  }
+
+  function cancelEditStok() {
+    if (confirm("Batalkan perubahan stok awal?")) {
+      exitEditStok();
+      document.getElementById('stokAwalV3').value = stok.v3;
+      document.getElementById('stokAwalV5').value = stok.v5;
+    }
+  }
+
+  function exitEditStok() {
+    editStokMode = false;
+    document.getElementById('stokAwalV3').disabled = true;
+    document.getElementById('stokAwalV5').disabled = true;
+    document.getElementById('editStokBtn').classList.remove('hidden');
+    document.getElementById('saveStokBtn').classList.add('hidden');
+    document.getElementById('cancelStokBtn').classList.add('hidden');
   }
 
   function loadStok() {
@@ -470,6 +524,11 @@
       document.getElementById('keluarV5').textContent = data.keluarV5;
       document.getElementById('sisaV3').textContent = data.v3 - data.keluarV3;
       document.getElementById('sisaV5').textContent = data.v5 - data.keluarV5;
+
+      if (!editStokMode) {
+        document.getElementById('stokAwalV3').value = data.v3;
+        document.getElementById('stokAwalV5').value = data.v5;
+      }
     });
   }
 
