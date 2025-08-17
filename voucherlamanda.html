@@ -205,9 +205,9 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Cek apakah pengguna admin
-  function isUserAdmin() {
-    return localStorage.getItem('userRole') === 'admin';
+  // Cek role pengguna
+  function getUserRole() {
+    return localStorage.getItem('username');
   }
 
   function login() {
@@ -230,7 +230,6 @@
 
     if (isValid) {
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userRole', role);
       localStorage.setItem('username', user);
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
@@ -247,7 +246,6 @@
   function logout() {
     if (confirm("Yakin ingin logout?")) {
       localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userRole');
       localStorage.removeItem('username');
       document.getElementById('app').classList.add('hidden');
       document.getElementById('loginScreen').classList.remove('hidden');
@@ -347,13 +345,13 @@
         alert("Transaksi berhasil diperbarui!");
         exitEditMode();
         loadTransactions();
-        loadStok(); // Muat ulang stok
+        loadStok();
       });
     } else {
       db.ref('transactions').push(trans).then(() => {
         alert("Pengambilan berhasil dicatat!");
         resetForm();
-        loadStok(); // Pastikan stok terbaru
+        loadStok();
       }).catch(err => {
         console.error("Gagal menyimpan transaksi:", err);
         alert("Gagal menyimpan data.");
@@ -415,7 +413,7 @@
       db.ref('transactions').child(id).remove().then(() => {
         alert("Transaksi dihapus.");
         loadTransactions();
-        loadStok(); // Update stok
+        loadStok();
       });
     }
   }
@@ -461,13 +459,13 @@
     document.getElementById('tglSetor').value = '';
   }
 
-  // === FITUR EDIT STOK AWAL ===
+  // === EDIT STOK AWAL ===
   function enableEditStok() {
-    if (!isUserAdmin()) {
-      alert("Hanya admin yang bisa mengedit stok awal.");
+    if (getUserRole() !== 'andi') {
+      alert("Hanya Andi yang bisa mengedit stok awal.");
       return;
     }
-    if (!confirm("Anda yakin ingin mengedit stok awal? Pastikan data sudah benar.")) return;
+    if (!confirm("Anda yakin ingin mengedit stok awal?")) return;
 
     editStokMode = true;
     document.getElementById('stokAwalV3').disabled = false;
@@ -494,7 +492,7 @@
       db.ref('stok').update({ v3, v5 }).then(() => {
         alert("Stok awal berhasil diperbarui!");
         exitEditStok();
-        loadStok(); // Refresh tampilan
+        loadStok();
       }).catch(err => {
         console.error("Gagal update stok:", err);
         alert("Gagal menyimpan ke database.");
@@ -652,7 +650,7 @@
       const v5 = t.v5 || '-';
       const nominal = t.type === 'ambil' ? formatRupiah(t.tagihan || 0) : formatRupiah(t.nominalSetor || 0);
       const editBtn = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>`;
-      const deleteBtn = isUserAdmin()
+      const deleteBtn = getUserRole() === 'andi'
         ? `<button class="delete" onclick="deleteTransaction('${t.id}')">Hapus</button>`
         : '';
       const action = t.id ? `${editBtn} ${deleteBtn}` : '';
@@ -670,24 +668,35 @@
     showRekapTable(transactions);
   }
 
+  // === CATATAN: Edit & Hapus Berdasarkan ID ===
   function loadNotes() {
     db.ref('notes').on('value', (snap) => {
       const data = snap.val();
       const list = document.getElementById('notesList');
       list.innerHTML = '';
-      const isAdmin = isUserAdmin();
+      const currentUser = getUserRole();
+
       if (data) {
         const notes = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
         notes.forEach(n => {
           const div = document.createElement('div');
           div.className = 'note-item';
-          const deleteButton = isAdmin
+
+          // Tombol Edit selalu muncul untuk andi, risman, anto
+          const editButton = `<button class="edit" onclick="editNote('${n.id}', '${escapeHtml(n.text)}')">Edit</button>`;
+
+          // Hapus hanya untuk andi
+          const deleteButton = currentUser === 'andi'
             ? `<button class="delete" onclick="deleteNote('${n.id}')">Hapus</button>`
             : '';
+
+          // Gabungkan tombol
+          const actions = `${editButton} ${deleteButton}`;
+
           div.innerHTML = `
             <div>${n.text.replace(/\n/g, '<br>')}</div>
             <div class="note-footer">Tanggal: ${new Date(n.timestamp).toLocaleString()}</div>
-            ${deleteButton}
+            ${actions}
           `;
           list.appendChild(div);
         });
@@ -695,6 +704,25 @@
         list.innerHTML = '<p>Tidak ada catatan.</p>';
       }
     });
+  }
+
+  // Fungsi bantu untuk amankan HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function editNote(id, currentText) {
+    const newText = prompt("Edit catatan:", currentText);
+    if (newText === null) return; // Batal
+    if (newText.trim() === '') {
+      alert("Catatan tidak boleh kosong!");
+      return;
+    }
+    db.ref('notes').child(id).update({ text: newText, timestamp: new Date().toISOString() })
+      .then(() => alert("Catatan berhasil diperbarui!"))
+      .catch(err => console.error("Gagal edit catatan:", err));
   }
 
   function addNote() {
@@ -705,7 +733,11 @@
   }
 
   function deleteNote(id) {
-    if (confirm("Hapus catatan ini?")) db.ref('notes').child(id).remove();
+    if (confirm("Hapus catatan ini?")) {
+      db.ref('notes').child(id).remove()
+        .then(() => alert("Catatan dihapus."))
+        .catch(err => console.error("Gagal hapus catatan:", err));
+    }
   }
 </script>
 </body>
