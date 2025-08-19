@@ -99,9 +99,9 @@
             <div id="loginError" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 Username atau password salah!
             </div>
+            <!-- Demo login info: HANYA menampilkan pengguna orangtua -->
             <div class="mt-6 text-center text-sm text-gray-600">
                 <p><strong>Demo Login:</strong></p>
-                <p>Admin: kelas4 / wali</p>
                 <p>Orang Tua: orangtua / lamanda</p>
             </div>
         </div>
@@ -120,7 +120,7 @@
                 🚪 Logout
             </button>
         </div>
-        <!-- Admin Panel (Only for kelas4) -->
+        <!-- Admin Panel (Only for Admin) -->
         <div id="adminPanel" class="hidden bg-white rounded-2xl card-shadow p-6 mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">👨‍💼 Panel Admin - Real-time</h2>
             <div class="grid md:grid-cols-3 gap-4">
@@ -133,13 +133,6 @@
                 <button id="clearAllData" class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg btn-hover transition-all">
                     🗑️ Hapus Semua
                 </button>
-            </div>
-            <!-- Filter Nama Anak (Hanya untuk kelas4) -->
-            <div class="mt-4">
-                <label class="block text-gray-700 text-sm font-medium mb-1">Filter Nama Anak:</label>
-                <select id="filterNamaAnak" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-700 text-sm" disabled>
-                    <option value="">Semua Anak</option>
-                </select>
             </div>
         </div>
         <!-- Real-time Stats -->
@@ -359,9 +352,6 @@
         };
         let currentUser = null;
         let journalsListener = null;
-        let allJournals = []; // Simpan semua dokumen
-        let uniqueNames = new Set(); // Simpan nama anak unik
-
         // DOM Elements
         const loginScreen = document.getElementById('loginScreen');
         const mainApp = document.getElementById('mainApp');
@@ -372,7 +362,6 @@
         const journalList = document.getElementById('journalList');
         const journalFormCard = document.getElementById('journalFormCard');
         const loadingOverlay = document.getElementById('loadingOverlay');
-
         // Show/Hide Loading
         function showLoading() {
             loadingOverlay.classList.remove('hidden');
@@ -380,50 +369,38 @@
         function hideLoading() {
             loadingOverlay.classList.add('hidden');
         }
-
         // Login functionality
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
             // Show loading
             document.getElementById('loginBtnText').textContent = 'Memverifikasi...';
             document.getElementById('loginSpinner').classList.remove('hidden');
-
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 1000));
-
             if (users[username] && users[username].password === password) {
                 currentUser = users[username];
                 currentUser.username = username;
-
                 // Hide login, show main app
                 loginScreen.classList.add('hidden');
                 mainApp.classList.remove('hidden');
-
                 // Update user role display
                 userRole.textContent = currentUser.name;
-
-                // Show admin panel only for 'kelas4'
-                if (currentUser.username === 'kelas4') {
+                // Show admin panel if admin
+                if (currentUser.role === 'admin') {
                     adminPanel.classList.remove('hidden');
-                } else {
-                    adminPanel.classList.add('hidden');
                 }
-
                 // Initialize the app
                 await initializeApp();
                 loginError.classList.add('hidden');
             } else {
                 loginError.classList.remove('hidden');
             }
-
             // Reset login button
             document.getElementById('loginBtnText').textContent = '🚀 Masuk';
             document.getElementById('loginSpinner').classList.add('hidden');
         });
-
         // Logout functionality
         document.getElementById('logoutBtn').addEventListener('click', function() {
             // Stop listening to real-time updates
@@ -437,12 +414,10 @@
             adminPanel.classList.add('hidden');
             journalList.classList.add('hidden');
             journalFormCard.classList.remove('hidden');
-
             // Reset login form
             loginForm.reset();
             loginError.classList.add('hidden');
         });
-
         // Initialize app after login
         async function initializeApp() {
             showLoading();
@@ -454,29 +429,19 @@
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             document.getElementById('bulan').value = months[today.getMonth()];
-
             // Start real-time listening
             startRealtimeListener();
             hideLoading();
         }
-
         // Real-time listener for journals
         function startRealtimeListener() {
             journalsListener = db.collection('journals')
                 .orderBy('timestamp', 'desc')
                 .onSnapshot((snapshot) => {
-                    // Simpan semua dokumen
-                    allJournals = snapshot.docs;
                     updateStats(snapshot.docs);
-
                     // Update total journals count
                     document.getElementById('totalJournals').textContent = snapshot.docs.length;
-
-                    // Ambil nama anak unik
-                    uniqueNames = new Set(snapshot.docs.map(doc => doc.data().namaAnak).filter(Boolean));
-                    populateNameFilter();
-
-                    // Update tampilan jika sedang di halaman jurnal
+                    // If journal list is visible, update it
                     if (!journalList.classList.contains('hidden')) {
                         displayJournalsRealtime(snapshot.docs);
                     }
@@ -485,7 +450,6 @@
                     updateOnlineStatus(false);
                 });
         }
-
         // Update statistics
         function updateStats(docs) {
             const today = new Date();
@@ -518,7 +482,6 @@
             document.getElementById('statsLastUpdate').textContent = lastUpdate ? 
                 lastUpdate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
         }
-
         // Helper functions
         function getMonthName(index) {
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -530,7 +493,6 @@
                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             return months.indexOf(monthName);
         }
-
         // Update online status
         function updateOnlineStatus(isOnline) {
             const statusEl = document.getElementById('onlineStatus');
@@ -550,18 +512,15 @@
                 `;
             }
         }
-
         // Admin functions
         document.getElementById('viewAllJournals').addEventListener('click', function() {
             showAllJournals();
         });
-
         document.getElementById('exportData').addEventListener('click', async function() {
             await exportJournalData();
         });
-
         document.getElementById('clearAllData').addEventListener('click', async function() {
-            if (currentUser.username !== 'kelas4') return;
+            if (currentUser.role !== 'admin') return;
             if (confirm('PERINGATAN: Ini akan menghapus SEMUA data jurnal secara permanen. Yakin?')) {
                 showLoading();
                 try {
@@ -579,65 +538,34 @@
                 hideLoading();
             }
         });
-
         // View journals button
         document.getElementById('viewJournalsBtn').addEventListener('click', function() {
             showAllJournals();
         });
-
         // Refresh journals button
         document.getElementById('refreshJournals').addEventListener('click', function() {
             showAllJournals();
         });
-
         // Back to form button
         document.getElementById('backToForm').addEventListener('click', function() {
             journalList.classList.add('hidden');
             journalFormCard.classList.remove('hidden');
         });
-
         // Show all journals
         function showAllJournals() {
             journalFormCard.classList.add('hidden');
             journalList.classList.remove('hidden');
             // The real-time listener will automatically update the display
         }
-
-        // Populate filter dropdown
-        function populateNameFilter() {
-            const filterSelect = document.getElementById('filterNamaAnak');
-            filterSelect.disabled = false;
-            filterSelect.innerHTML = '<option value="">Semua Anak</option>';
-            Array.from(uniqueNames)
-                .sort()
-                .forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    filterSelect.appendChild(option);
-                });
-        }
-
-        // Display journals in real-time with filter
+        // Display journals in real-time
         function displayJournalsRealtime(docs) {
             const journalEntries = document.getElementById('journalEntries');
             journalEntries.innerHTML = '';
-
-            // Ambil nilai filter
-            const selectedName = document.getElementById('filterNamaAnak')?.value || '';
-            const filteredDocs = selectedName 
-                ? docs.filter(doc => doc.data().namaAnak === selectedName)
-                : docs;
-
-            if (filteredDocs.length === 0) {
-                const msg = selectedName 
-                    ? `<p class="text-gray-500 text-center py-8">Tidak ada jurnal untuk anak: <strong>${selectedName}</strong></p>`
-                    : '<p class="text-gray-500 text-center py-8">Belum ada jurnal yang tersimpan.</p>';
-                journalEntries.innerHTML = msg;
+            if (docs.length === 0) {
+                journalEntries.innerHTML = '<p class="text-gray-500 text-center py-8">Belum ada jurnal yang tersimpan.</p>';
                 return;
             }
-
-            filteredDocs.forEach((doc) => {
+            docs.forEach((doc) => {
                 const journal = doc.data();
                 const journalCard = document.createElement('div');
                 journalCard.className = 'bg-gray-50 p-4 rounded-lg border hover:shadow-md transition-all';
@@ -661,7 +589,7 @@
                         Diinput oleh: ${journal.submittedByRole === 'admin' ? '👨‍💼 Admin' : '👨‍👩‍👧‍👦 Orang Tua'} 
                         (${journal.submittedBy})
                     </div>
-                    ${currentUser.username === 'kelas4' ? `
+                    ${currentUser.role === 'admin' ? `
                         <button onclick="deleteJournalFromFirestore('${doc.id}')" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
                             🗑️ Hapus
                         </button>
@@ -670,10 +598,9 @@
                 journalEntries.appendChild(journalCard);
             });
         }
-
         // Delete journal from Firestore
         async function deleteJournalFromFirestore(docId) {
-            if (currentUser.username !== 'kelas4') return;
+            if (currentUser.role !== 'admin') return;
             if (confirm('Yakin ingin menghapus jurnal ini?')) {
                 showLoading();
                 try {
@@ -686,10 +613,9 @@
                 hideLoading();
             }
         }
-
         // Export data from Firestore
         async function exportJournalData() {
-            if (currentUser.username !== 'kelas4') return;
+            if (currentUser.role !== 'admin') return;
             showLoading();
             try {
                 const snapshot = await db.collection('journals').orderBy('timestamp', 'desc').get();
@@ -706,16 +632,15 @@
                 const dataBlob = new Blob([dataStr], {type: 'application/json'});
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(dataBlob);
-                link.download = `jurnal_harian_export_${new Date().toISOString().split('T')[0]}.json`;
+                link.download = \`jurnal_harian_export_\${new Date().toISOString().split('T')[0]}.json\`;
                 link.click();
-                alert(`Berhasil export ${journals.length} jurnal!`);
+                alert(\`Berhasil export \${journals.length} jurnal!\`);
             } catch (error) {
                 console.error('Error exporting data:', error);
                 alert('Gagal export data: ' + error.message);
             }
             hideLoading();
         }
-
         // Handle form submission to Firestore
         document.getElementById('journalForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -788,11 +713,9 @@
             document.getElementById('submitBtnText').textContent = '💾 Simpan ke Cloud';
             document.getElementById('submitSpinner').classList.add('hidden');
         });
-
         // Monitor online/offline status
         window.addEventListener('online', () => updateOnlineStatus(true));
         window.addEventListener('offline', () => updateOnlineStatus(false));
-
         // Smooth animations for inputs
         document.querySelectorAll('input, select, textarea').forEach(element => {
             element.addEventListener('focus', function() {
@@ -802,12 +725,6 @@
                 this.parentElement.style.transform = 'scale(1)';
             });
         });
-
-        // Event listener for filter
-        document.getElementById('filterNamaAnak').addEventListener('change', function() {
-            displayJournalsRealtime(allJournals);
-        });
-
         // Initialize online status
         updateOnlineStatus(navigator.onLine);
     </script>
