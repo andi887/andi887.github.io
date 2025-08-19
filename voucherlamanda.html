@@ -1,761 +1,876 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="global net lamanda">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pembukuan Agen</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f4f6f9; color: #333; }
-    .container { max-width: 1000px; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    h1, h2 { text-align: center; color: #2c3e50; }
-    .tab { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab button { padding: 10px 15px; margin: 5px; border: none; background: #3498db; color: white; cursor: pointer; border-radius: 5px; font-size: 14px; }
-    .tab button.active { background: #2980b9; }
-    .tab button:hover { background: #1e6db6; }
-    .tabcontent { display: none; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fdfdfd; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 10px; text-align: center; }
-    th { background: #3498db; color: white; }
-    input, select, button { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
-    button.primary { background: #27ae60; color: white; border: none; cursor: pointer; }
-    button.primary:hover { background: #219a52; }
-    button.edit { background: #f39c12; color: white; padding: 5px 10px; font-size: 12px; }
-    button.delete { background: #e74c3c; color: white; padding: 5px 10px; font-size: 12px; }
-    button.logout { background: #e74c3c; color: white; float: right; padding: 5px 10px; font-size: 14px; }
-    .form-group { margin: 10px 0; }
-    .login { text-align: center; margin-top: 50px; }
-    .login input { width: 200px; margin: 5px; }
-    .hidden { display: none; }
-    textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; min-height: 100px; }
-    .note-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; background: #f9f9f9; }
-    .note-footer { font-size: 12px; color: #777; text-align: right; margin-top: 5px; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pembukuan Agen</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f4f6f9; color: #333; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #2c3e50; }
+        .tab { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab button { padding: 10px 15px; margin: 5px; border: none; background: #3498db; color: white; cursor: pointer; border-radius: 5px; font-size: 14px; }
+        .tab button.active { background: #2980b9; }
+        .tab button:hover { background: #1e6db6; }
+        .tabcontent { display: none; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fdfdfd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 10px; text-align: center; }
+        th { background: #3498db; color: white; }
+        input, select, button { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button.primary { background: #27ae60; color: white; border: none; cursor: pointer; }
+        button.primary:hover { background: #219a52; }
+        button.edit { background: #f39c12; color: white; padding: 5px 10px; font-size: 12px; }
+        button.delete { background: #e74c3c; color: white; padding: 5px 10px; font-size: 12px; }
+        button.logout { background: #e74c3c; color: white; float: right; padding: 5px 10px; font-size: 14px; }
+        .form-group { margin: 10px 0; }
+        .login { text-align: center; margin-top: 50px; }
+        .login input { width: 200px; margin: 5px; }
+        .hidden { display: none; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; min-height: 100px; }
+        .note-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; background: #f9f9f9; }
+        .note-footer { font-size: 12px; color: #777; text-align: right; margin-top: 5px; }
 
-    /* Rekap Styling */
-    .rekap-box {
-      display: flex; justify-content: space-around; margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 8px; font-family: sans-serif; flex-wrap: wrap; gap: 10px;
-    }
-    .rekap-item { text-align: center; flex: 1; min-width: 200px; }
-    .rekap-item h4 { margin: 0 0 5px 0; color: #2c3e50; font-size: 14px; }
-    .rekap-item p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #27ae60; }
-    .filter-section { margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center; }
-    .filter-section label { margin: 0 5px; }
-    .filter-section input, .filter-section button { margin: 5px; }
-  </style>
+        /* Rekap Styling */
+        .rekap-box {
+            display: flex; justify-content: space-around; margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 8px; font-family: sans-serif; flex-wrap: wrap; gap: 10px;
+        }
+        .rekap-item { text-align: center; flex: 1; min-width: 200px; }
+        .rekap-item h4 { margin: 0 0 5px 0; color: #2c3e50; font-size: 14px; }
+        .rekap-item p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #27ae60; }
+        .filter-section { margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center; }
+        .filter-section label { margin: 0 5px; }
+        .filter-section input, .filter-section button { margin: 5px; }
+
+        /* Siklus Rumus Styling */
+        .siklus-rumus {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #eef;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .siklus-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        .siklus-item h4 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .siklus-item p {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+            color: #3498db;
+        }
+    </style>
 </head>
 <body>
 
 <div id="loginScreen" class="login">
-  <h2>Login Pembukuan</h2>
-  <input type="text" id="username" placeholder="ID" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="login()">Masuk</button>
-  <p id="loginError" style="color: red; display: none;">ID atau password salah!</p>
+    <h2>Login Pembukuan</h2>
+    <input type="text" id="username" placeholder="ID" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Masuk</button>
+    <p id="loginError" style="color: red; display: none;">ID atau password salah!</p>
 </div>
 
 <div id="app" class="container hidden">
-  <div style="text-align: right; font-size: 14px; color: #555; margin-bottom: 10px;">
-    Masuk sebagai: <strong id="currentUserDisplay"></strong>
-  </div>
-  <h1>Pembukuan Agen Distribusi</h1>
-  <button class="logout" onclick="logout()">Logout</button>
-  <div class="tab">
-    <button class="tablinks active" onclick="openTab(event, 'Transaksi')">Transaksi</button>
-    <button class="tablinks" onclick="openTab(event, 'Rekap')">Rekap</button>
-    <button class="tablinks" onclick="openTab(event, 'Stok')">Stok</button>
-    <button class="tablinks" onclick="openTab(event, 'Agen')">Daftar Agen</button>
-    <button class="tablinks" onclick="openTab(event, 'Catatan')">Catatan</button>
-  </div>
+    <div style="text-align: right; font-size: 14px; color: #555; margin-bottom: 10px;">
+        Masuk sebagai: <strong id="currentUserDisplay"></strong>
+    </div>
+    <h1>Pembukuan Agen Distribusi</h1>
+    <button class="logout" onclick="logout()">Logout</button>
+    <div class="tab">
+        <button class="tablinks active" onclick="openTab(event, 'Transaksi')">Transaksi</button>
+        <button class="tablinks" onclick="openTab(event, 'Rekap')">Rekap</button>
+        <button class="tablinks" onclick="openTab(event, 'Stok')">Stok</button>
+        <button class="tablinks" onclick="openTab(event, 'Agen')">Daftar Agen</button>
+        <button class="tablinks" onclick="openTab(event, 'Catatan')">Catatan</button>
+    </div>
 
-    <div id="Transaksi" class="tabcontent" style="display: block;">
-    <h2>Transaksi Pengambilan & Penyetoran</h2>
-    <div class="form-group">
-      <label>Pilih Agen:</label>
-      <select id="agentSelect"></select>
-    </div>
+    <div id="Transaksi" class="tabcontent" style="display: block;">
+        <h2>Transaksi Pengambilan & Penyetoran</h2>
+        <div class="form-group">
+            <label>Pilih Agen:</label>
+            <select id="agentSelect"></select>
+        </div>
 
-    <h3>Pengambilan Barang</h3>
-    <div class="form-group">
-      <label>Tanggal Pengambilan:</label>
-      <input type="date" id="tglAmbil" />
-    </div>
-    <div class="form-group">
-      <label>V3 (2,550):</label>
-      <input type="number" id="v3Qty" min="0" value="0" onchange="updateTagihan()" />
-    </div>
-    <div class="form-group">
-      <label>V5 (4,250):</label>
-      <input type="number" id="v5Qty" min="0" value="0" onchange="updateTagihan()" />
-    </div>
-    <div class="form-group">
-      <label><strong>Nominal Tagihan:</strong></label>
-      <input type="text" id="tagihan" readonly style="font-weight:bold; background:#eef;" />
-    </div>
-    <input type="hidden" id="editTransId" value="" />
-    <button class="primary" onclick="submitPengambilan()" id="submitBtnAmbil">Catat Pengambilan</button>
-    <button class="primary hidden" onclick="saveEdit()" id="saveEditBtn">Simpan Perubahan</button>
-    <button class="hidden" onclick="cancelEdit()" id="cancelEditBtn">Batal</button>
+        <h3>Pengambilan Barang</h3>
+        <div class="form-group">
+            <label>Tanggal Pengambilan:</label>
+            <input type="date" id="tglAmbil" />
+        </div>
+        <div class="form-group">
+            <label>V3 (2,550):</label>
+            <input type="number" id="v3Qty" min="0" value="0" onchange="updateTagihan()" />
+        </div>
+        <div class="form-group">
+            <label>V5 (4,250):</label>
+            <input type="number" id="v5Qty" min="0" value="0" onchange="updateTagihan()" />
+        </div>
+        <div class="form-group">
+            <label><strong>Nominal Tagihan:</strong></label>
+            <input type="text" id="tagihan" readonly style="font-weight:bold; background:#eef;" />
+        </div>
+        <input type="hidden" id="editTransId" value="" />
+        <button class="primary" onclick="submitPengambilan()" id="submitBtnAmbil">Catat Pengambilan</button>
+        <button class="primary hidden" onclick="saveEdit()" id="saveEditBtn">Simpan Perubahan</button>
+        <button class="hidden" onclick="cancelEdit()" id="cancelEditBtn">Batal</button>
 
-    <h3>Penyetoran Uang</h3>
-    <div class="form-group">
-      <label>Tanggal Setoran:</label>
-      <input type="date" id="tglSetor" />
-    </div>
-    <div class="form-group">
-      <label>Nominal Setoran (Rp):</label>
-      <input type="number" id="nominalSetor" min="0" placeholder="Jumlah uang yang disetor" />
-    </div>
-    <button class="primary" onclick="submitPenyetoran()" id="submitBtnSetor">Catat Setoran</button>
-  </div>
+        <h3>Penyetoran Uang</h3>
+        <div class="form-group">
+            <label>Tanggal Setoran:</label>
+            <input type="date" id="tglSetor" />
+        </div>
+        <div class="form-group">
+            <label>Nominal Setoran (Rp):</label>
+            <input type="number" id="nominalSetor" min="0" placeholder="Jumlah uang yang disetor" />
+        </div>
+        <button class="primary" onclick="submitPenyetoran()" id="submitBtnSetor">Catat Setoran</button>
+    </div>
 
-    <div id="Rekap" class="tabcontent">
-    <h2>Rekap Transaksi & Hutang</h2>
+    <div id="Rekap" class="tabcontent">
+        <h2>Rekap Transaksi & Hutang</h2>
 
-        <div class="filter-section">
-      <label>Dari Tanggal: <input type="date" id="filterTglAwal"></label>
-      <label>Sampai Tanggal: <input type="date" id="filterTglAkhir"></label>
-      <button onclick="filterRekap()">Terapkan Filter</button>
-      <button onclick="resetFilter()">Reset</button>
-    </div>
+        <div class="filter-section">
+            <label>Dari Tanggal: <input type="date" id="filterTglAwal"></label>
+            <label>Sampai Tanggal: <input type="date" id="filterTglAkhir"></label>
+            <button onclick="filterRekap()">Terapkan Filter</button>
+            <button onclick="resetFilter()">Reset</button>
+        </div>
 
-        <div class="rekap-box">
-      <div class="rekap-item">
-        <h4>Total Tagihan Belum Lunas</h4>
-        <p id="total-tagihan">Rp 0</p>
-      </div>
-      <div class="rekap-item">
-        <h4>Total Setoran (Semua Agen)</h4>
-        <p id="total-setoran">Rp 0</p>
-      </div>
-      <div class="rekap-item">
-        <h4>Setoran ke Global</h4>
-        <p id="total-global-tagihan">Rp 0</p>
-      </div>
-      <div class="rekap-item">
-        <h4>Jumlah TF Telah Disetor</h4>
-        <p id="total-tf-disetor">Rp 0</p>
-      </div>
-      <div class="rekap-item">
-        <h4>Sisa Setoran Global</h4>
-        <p id="sisa-global">Rp 0</p>
-      </div>
-    </div>
+        <div class="rekap-box">
+            <div class="rekap-item">
+                <h4>Total Tagihan Belum Lunas</h4>
+                <p id="total-tagihan">Rp 0</p>
+            </div>
+            <div class="rekap-item">
+                <h4>Total Setoran (Semua Agen)</h4>
+                <p id="total-setoran">Rp 0</p>
+            </div>
+        </div>
+        
+        <div class="siklus-rumus">
+            <div class="siklus-item">
+                <h4>Setoran ke Global</h4>
+                <p id="total-global-tagihan">Rp 0</p>
+            </div>
+            <div class="siklus-item">
+                <h4>Yang Sudah di TF</h4>
+                <p id="total-tf-disetor-display">Rp 0</p>
+            </div>
+            <div class="siklus-item">
+                <h4>Sisa Setoran</h4>
+                <p id="sisa-global">Rp 0</p>
+            </div>
+        </div>
+        
+        <div class="form-group" style="text-align: center;">
+            <h3>Tambah Catatan TF</h3>
+            <input type="date" id="tfTgl" />
+            <input type="number" id="tfNominal" min="0" placeholder="Nominal TF" />
+            <button onclick="addTf()">Tambah TF</button>
+        </div>
+        <div id="tfList"></div>
 
-        <button onclick="loadRekap()">Muat Rekap</button>
-    <div id="rekapContent"></div>
-  </div>
+        <button onclick="loadRekap()">Muat Rekap</button>
+        <div id="rekapContent"></div>
+    </div>
 
-    <div id="Stok" class="tabcontent">
-    <h2>Manajemen Stok</h2>
+    <div id="Stok" class="tabcontent">
+        <h2>Manajemen Stok</h2>
 
-        <div class="form-group">
-      <button id="editStokBtn" class="edit" onclick="enableEditStok()">Edit Stok Awal</button>
-      <button id="saveStokBtn" class="primary hidden" onclick="saveStokAwal()">Simpan Stok Awal</button>
-      <button id="cancelStokBtn" class="hidden" onclick="cancelEditStok()">Batal</button>
-    </div>
+        <div class="form-group">
+            <button id="editStokBtn" class="edit" onclick="enableEditStok()">Edit Stok Awal</button>
+            <button id="saveStokBtn" class="primary hidden" onclick="saveStokAwal()">Simpan Stok Awal</button>
+            <button id="cancelStokBtn" class="hidden" onclick="cancelEditStok()">Batal</button>
+        </div>
 
-    <div class="form-group">
-      <label>Stok Awal V3:</label>
-      <input type="number" id="stokAwalV3" value="0" disabled />
-    </div>
-    <div class="form-group">
-      <label>Stok Awal V5:</label>
-      <input type="number" id="stokAwalV5" value="0" disabled />
-    </div>
+        <div class="form-group">
+            <label>Stok Awal V3:</label>
+            <input type="number" id="stokAwalV3" value="0" disabled />
+        </div>
+        <div class="form-group">
+            <label>Stok Awal V5:</label>
+            <input type="number" id="stokAwalV5" value="0" disabled />
+        </div>
 
-    <table id="stokTable">
-      <tr><th>Item</th><th>V3</th><th>V5</th></tr>
-      <tr><td>Stok Awal</td><td id="awalV3">0</td><td id="awalV5">0</td></tr>
-      <tr><td>Barang Keluar</td><td id="keluarV3">0</td><td id="keluarV5">0</td></tr>
-      <tr><td>Sisa Stok</td><td id="sisaV3">0</td><td id="sisaV5">0</td></tr>
-    </table>
-  </div>
+        <table id="stokTable">
+            <tr><th>Item</th><th>V3</th><th>V5</th></tr>
+            <tr><td>Stok Awal</td><td id="awalV3">0</td><td id="awalV5">0</td></tr>
+            <tr><td>Barang Keluar</td><td id="keluarV3">0</td><td id="keluarV5">0</td></tr>
+            <tr><td>Sisa Stok</td><td id="sisaV3">0</td><td id="sisaV5">0</td></tr>
+        </table>
+    </div>
 
-    <div id="Agen" class="tabcontent">
-    <h2>Daftar Agen</h2>
-    <table id="agentTable">
-      <tr><th>No</th><th>Nama Agen</th></tr>
-    </table>
-    <div class="form-group">
-      <input type="text" id="newAgent" placeholder="Tambah Nama Agen Baru" />
-      <button class="primary" onclick="addAgent()">Tambah Agen</button>
-    </div>
-  </div>
+    <div id="Agen" class="tabcontent">
+        <h2>Daftar Agen</h2>
+        <table id="agentTable">
+            <tr><th>No</th><th>Nama Agen</th></tr>
+        </table>
+        <div class="form-group">
+            <input type="text" id="newAgent" placeholder="Tambah Nama Agen Baru" />
+            <button class="primary" onclick="addAgent()">Tambah Agen</button>
+        </div>
+    </div>
 
-    <div id="Catatan" class="tabcontent">
-    <h2>Catatan & Pengingat</h2>
-    <div class="form-group">
-      <textarea id="newNote" placeholder="Tulis catatan penting di sini..."></textarea>
-    </div>
-    <button class="primary" onclick="addNote()">Tambah Catatan</button>
-    <div id="notesList"></div>
-  </div>
+    <div id="Catatan" class="tabcontent">
+        <h2>Catatan & Pengingat</h2>
+        <div class="form-group">
+            <textarea id="newNote" placeholder="Tulis catatan penting di sini..."></textarea>
+        </div>
+        <button class="primary" onclick="addNote()">Tambah Catatan</button>
+        <div id="notesList"></div>
+    </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCQG4Jnw6oQSMcXdOUIDOhxMVL-ykvXV7A",
-    authDomain: "pacific-byte-407704.firebaseapp.com",
-    databaseURL: "https://pacific-byte-407704-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "pacific-byte-407704",
-    storageBucket: "pacific-byte-407704.firebasestorage.app",
-    messagingSenderId: "979756373437",
-    appId: "1:979756373437:web:f27203cb2f144108d12ed4"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const HARGA_GLOBAL_V3 = 2400;
-  const HARGA_GLOBAL_V5 = 4000;
-
-  // Cek role pengguna
-  function getUserRole() {
-    return localStorage.getItem('username');
-  }
-
-  function login() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-
-    let isValid = false;
-    let role = '';
-
-    if (user === 'andi' && pass === 'paswordx') {
-      isValid = true;
-      role = 'admin';
-    } else if (user === 'risman' && pass === 'sahrul') {
-      isValid = true;
-      role = 'user';
-    } else if (user === 'anto' && pass === 'afzal') {
-      isValid = true;
-      role = 'user';
-    }
-
-    if (isValid) {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('username', user);
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('currentUserDisplay').textContent = user;
-      loadAgents();
-      loadStok();
-      loadTransactions();
-      loadNotes();
-    } else {
-      document.getElementById('loginError').style.display = 'block';
-    }
-  }
-
-  function logout() {
-    if (confirm("Yakin ingin logout?")) {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('username');
-      document.getElementById('app').classList.add('hidden');
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-    }
-  }
-
-  window.onload = function() {
-    if (localStorage.getItem('isLoggedIn') === 'true') {
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('currentUserDisplay').textContent = localStorage.getItem('username');
-      loadAgents();
-      loadStok();
-      loadTransactions();
-      loadNotes();
-    }
-  };
-
-  function openTab(evt, tabName) {
-    const tabs = document.getElementsByClassName("tabcontent");
-    for (let i = 0; i < tabs.length; i++) { tabs[i].style.display = "none"; }
-    const tablinks = document.getElementsByClassName("tablinks");
-    for (let i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
-    document.getElementById(tabName).style.display = "block";
-    if (evt) evt.currentTarget.className += " active";
-
-    if (tabName === 'Rekap') {
-      loadRekap();
-    }
-  }
-
-  const agents = ["radiah", "ibu rostini", "ibu mila", "mira", "mama arham", "jusra wira", "ibu putri", "bang adi", "ibu nayla", "ibu hasna", "ibu asnita", "ibu ayu", "ibu Rika", "pak risman", "afzal", "pak jusriadi", "ibu ira", "pak sulaiman", "ibu ardilla", "ibu ennar"];
-
-  function loadAgents() {
-    const select = document.getElementById('agentSelect');
-    const table = document.getElementById('agentTable');
-    table.innerHTML = '<tr><th>No</th><th>Nama Agen</th></tr>';
-    select.innerHTML = '';
-    agents.forEach((name, idx) => {
-      const no = idx + 1;
-      const opt = document.createElement('option');
-      opt.value = no;
-      opt.textContent = `${no}. ${name}`;
-      select.appendChild(opt);
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${no}</td><td>${name}</td>`;
-      table.appendChild(row);
-    });
-  }
-
-  function addAgent() {
-    const newName = document.getElementById('newAgent').value.trim();
-    if (newName && !agents.includes(newName.toLowerCase())) {
-      agents.push(newName);
-      db.ref('agents').set(agents);
-      loadAgents();
-      document.getElementById('newAgent').value = '';
-    }
-  }
-
-  function formatRupiah(angka) {
-    return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
-
-  function updateTagihan() {
-    const v3 = parseInt(document.getElementById('v3Qty').value) || 0;
-    const v5 = parseInt(document.getElementById('v5Qty').value) || 0;
-    const total = (v3 * 2550) + (v5 * 4250);
-    document.getElementById('tagihan').value = formatRupiah(total);
-  }
-
-  let transactions = [];
-  let stok = { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
-  let editMode = false;
-  let editStokMode = false;
-
-  function submitPengambilan() {
-    const agentId = document.getElementById('agentSelect').value;
-    const tglAmbil = document.getElementById('tglAmbil').value;
-    const v3 = parseInt(document.getElementById('v3Qty').value) || 0;
-    const v5 = parseInt(document.getElementById('v5Qty').value) || 0;
-    const tagihan = (v3 * 2550) + (v5 * 4250);
-    const agentName = agents[agentId - 1];
-
-    if (!tglAmbil || (v3 === 0 && v5 === 0)) {
-      alert("Isi tanggal dan jumlah barang.");
-      return;
-    }
-
-    const trans = { type: 'ambil', agentId, agentName, tglAmbil, v3, v5, tagihan, timestamp: new Date().toISOString() };
-
-    if (editMode) {
-      const id = document.getElementById('editTransId').value;
-      db.ref('transactions').child(id).update(trans).then(() => {
-        alert("Transaksi berhasil diperbarui!");
-        exitEditMode();
-        loadTransactions();
-        loadStok();
-      });
-    } else {
-      db.ref('transactions').push(trans).then(() => {
-        alert("Pengambilan berhasil dicatat!");
-        resetForm();
-        loadStok();
-      }).catch(err => {
-        console.error("Gagal menyimpan transaksi:", err);
-        alert("Gagal menyimpan data.");
-      });
-    }
-  }
-
-  function submitPenyetoran() {
-    const agentId = document.getElementById('agentSelect').value;
-    const tglSetor = document.getElementById('tglSetor').value;
-    const nominalSetor = parseInt(document.getElementById('nominalSetor').value) || 0;
-    const agentName = agents[agentId - 1];
-
-    if (!tglSetor || nominalSetor <= 0) {
-      alert("Isi tanggal dan nominal setoran.");
-      return;
-    }
-
-    const trans = { type: 'setor', agentId, agentName, tglSetor, nominalSetor, timestamp: new Date().toISOString() };
-
-    if (editMode) {
-      const id = document.getElementById('editTransId').value;
-      db.ref('transactions').child(id).update(trans).then(() => {
-        alert("Setoran berhasil diperbarui!");
-        exitEditMode();
-        loadTransactions();
-      });
-    } else {
-      db.ref('transactions').push(trans).then(() => {
-        alert("Penyetoran berhasil dicatat!");
-        resetForm();
-      }).catch(err => {
-        console.error("Gagal menyimpan setoran:", err);
-        alert("Gagal menyimpan data.");
-      });
-    }
-  }
-
-  function editTransaction(id) {
-    const trans = transactions.find(t => t.id === id);
-    if (!trans) return;
-    enterEditMode(id);
-    if (trans.type === 'ambil') {
-      document.getElementById('agentSelect').value = trans.agentId;
-      document.getElementById('tglAmbil').value = trans.tglAmbil;
-      document.getElementById('v3Qty').value = trans.v3;
-      document.getElementById('v5Qty').value = trans.v5;
-      updateTagihan();
-    } else if (trans.type === 'setor') {
-      document.getElementById('agentSelect').value = trans.agentId;
-      document.getElementById('tglSetor').value = trans.tglSetor;
-      document.getElementById('nominalSetor').value = trans.nominalSetor;
-    }
-    openTab(null, 'Transaksi');
-  }
-
-  function deleteTransaction(id) {
-    if (confirm("Hapus transaksi ini?")) {
-      db.ref('transactions').child(id).remove().then(() => {
-        alert("Transaksi dihapus.");
-        loadTransactions();
-        loadStok();
-      });
-    }
-  }
-
-  function enterEditMode(id) {
-    editMode = true;
-    document.getElementById('editTransId').value = id;
-    document.getElementById('submitBtnAmbil').classList.add('hidden');
-    document.getElementById('submitBtnSetor').classList.add('hidden');
-    document.getElementById('saveEditBtn').classList.remove('hidden');
-    document.getElementById('cancelEditBtn').classList.remove('hidden');
-  }
-
-  function exitEditMode() {
-    editMode = false;
-    document.getElementById('editTransId').value = '';
-    document.getElementById('submitBtnAmbil').classList.remove('hidden');
-    document.getElementById('submitBtnSetor').classList.remove('hidden');
-    document.getElementById('saveEditBtn').classList.add('hidden');
-    document.getElementById('cancelEditBtn').classList.add('hidden');
-  }
-
-  function cancelEdit() {
-    if (confirm("Batalkan perubahan?")) {
-      exitEditMode();
-      resetForm();
-    }
-  }
-
-  function saveEdit() {
-    const id = document.getElementById('editTransId').value;
-    const trans = transactions.find(t => t.id === id);
-    if (trans.type === 'ambil') submitPengambilan();
-    else submitPenyetoran();
-  }
-
-  function resetForm() {
-    document.getElementById('v3Qty').value = '0';
-    document.getElementById('v5Qty').value = '0';
-    document.getElementById('nominalSetor').value = '';
-    document.getElementById('tagihan').value = '';
-    document.getElementById('tglAmbil').value = '';
-    document.getElementById('tglSetor').value = '';
-  }
-
-  // === EDIT STOK AWAL ===
-  function enableEditStok() {
-    if (getUserRole() !== 'andi') {
-      alert("Hanya Andi yang bisa mengedit stok awal.");
-      return;
-    }
-    if (!confirm("Anda yakin ingin mengedit stok awal?")) return;
-
-    editStokMode = true;
-    document.getElementById('stokAwalV3').disabled = false;
-    document.getElementById('stokAwalV5').disabled = false;
-    document.getElementById('editStokBtn').classList.add('hidden');
-    document.getElementById('saveStokBtn').classList.remove('hidden');
-    document.getElementById('cancelStokBtn').classList.add('hidden');
-  }
-
-  function saveStokAwal() {
-    if (!editStokMode) return;
-
-    const v3 = parseInt(document.getElementById('stokAwalV3').value) || 0;
-    const v5 = parseInt(document.getElementById('stokAwalV5').value) || 0;
-
-    if (v3 < stok.keluarV3 || v5 < stok.keluarV5) {
-      alert("Stok awal tidak boleh kurang dari jumlah barang keluar!");
-      return;
-    }
-
-    if (confirm(`Simpan stok awal baru?\nV3: ${v3}, V5: ${v5}`)) {
-      stok.v3 = v3;
-      stok.v5 = v5;
-      db.ref('stok').update({ v3, v5 }).then(() => {
-        alert("Stok awal berhasil diperbarui!");
-        exitEditStok();
-        loadStok();
-      }).catch(err => {
-        console.error("Gagal update stok:", err);
-        alert("Gagal menyimpan ke database.");
-      });
-    }
-  }
-
-  function cancelEditStok() {
-    if (confirm("Batalkan perubahan stok awal?")) {
-      exitEditStok();
-      document.getElementById('stokAwalV3').value = stok.v3;
-      document.getElementById('stokAwalV5').value = stok.v5;
-    }
-  }
-
-  function exitEditStok() {
-    editStokMode = false;
-    document.getElementById('stokAwalV3').disabled = true;
-    document.getElementById('stokAwalV5').disabled = true;
-    document.getElementById('editStokBtn').classList.remove('hidden');
-    document.getElementById('saveStokBtn').classList.add('hidden');
-    document.getElementById('cancelStokBtn').classList.add('hidden');
-  }
-
-  function loadStok() {
-    db.ref('stok').once('value').then(snap => {
-      const data = snap.val() || { v3: 0, v5: 0 };
-      stok.v3 = data.v3 || 0;
-      stok.v5 = data.v5 || 0;
-
-      return db.ref('transactions').once('value');
-    }).then(snap => {
-      const trans = snap.val();
-      let keluarV3 = 0;
-      let keluarV5 = 0;
-
-      if (trans) {
-        for (let key in trans) {
-          const t = trans[key];
-          if (t.type === 'ambil') {
-            keluarV3 += parseInt(t.v3) || 0;
-            keluarV5 += parseInt(t.v5) || 0;
-          }
-        }
-      }
-
-      stok.keluarV3 = keluarV3;
-      stok.keluarV5 = keluarV5;
-
-      document.getElementById('awalV3').textContent = stok.v3;
-      document.getElementById('awalV5').textContent = stok.v5;
-      document.getElementById('keluarV3').textContent = keluarV3;
-      document.getElementById('keluarV5').textContent = keluarV5;
-      document.getElementById('sisaV3').textContent = stok.v3 - keluarV3;
-      document.getElementById('sisaV5').textContent = stok.v5 - keluarV5;
-
-      if (!editStokMode) {
-        document.getElementById('stokAwalV3').value = stok.v3;
-        document.getElementById('stokAwalV5').value = stok.v5;
-      }
-    }).catch(err => {
-      console.error("Error loading stok:", err);
-    });
-  }
-
-  function loadTransactions() {
-    db.ref('transactions').on('value', (snap) => {
-      const data = snap.val();
-      transactions = [];
-      for (let key in data) {
-        transactions.push({ id: key, ...data[key] });
-      }
-      transactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      if (document.getElementById('Rekap').style.display === 'block') {
-        loadRekap();
-      }
-    });
-  }
-
-  function filterRekap() {
-    const tglAwal = document.getElementById('filterTglAwal').value;
-    const tglAkhir = document.getElementById('filterTglAkhir').value;
-    let filtered = transactions;
-    if (tglAwal) {
-      filtered = filtered.filter(t => {
-        const tgl = t.tglAmbil || t.tglSetor;
-        return tgl && tgl >= tglAwal;
-      });
-    }
-    if (tglAkhir) {
-      filtered = filtered.filter(t => {
-        const tgl = t.tglAmbil || t.tglSetor;
-        return tgl && tgl <= tglAkhir;
-      });
-    }
-    updateRekapBox(filtered);
-    showRekapTable(filtered);
-  }
-
-  function resetFilter() {
-    document.getElementById('filterTglAwal').value = '';
-    document.getElementById('filterTglAkhir').value = '';
-    updateRekapBox(transactions);
-    showRekapTable(transactions);
-  }
-
-  function updateRekapBox(transList) {
-    let totalTagihanBelumLunas = 0;
-    let totalSetoran = 0;
-    let totalSetoranGlobal = 0;
-    let totalTfDisetor = 0;
-
-    const agentBalance = {};
-    agents.forEach(a => agentBalance[a] = 0);
-    transList.forEach(t => {
-      if (t.type === 'ambil') {
-        agentBalance[t.agentName] += t.tagihan;
-        totalSetoranGlobal += (t.v3 * HARGA_GLOBAL_V3) + (t.v5 * HARGA_GLOBAL_V5);
-      } else if (t.type === 'setor') {
-        agentBalance[t.agentName] -= t.nominalSetor;
-        totalSetoran += t.nominalSetor;
-        totalTfDisetor += t.nominalSetor;
-      }
-    });
-    for (let name in agentBalance) {
-      if (agentBalance[name] > 0) {
-        totalTagihanBelumLunas += agentBalance[name];
-      }
-    }
-
-    const sisaSetoranGlobal = totalSetoranGlobal - totalTfDisetor;
-    document.getElementById('total-tagihan').textContent = formatRupiah(totalTagihanBelumLunas);
-    document.getElementById('total-setoran').textContent = formatRupiah(totalSetoran);
-    document.getElementById('total-global-tagihan').textContent = formatRupiah(totalSetoranGlobal);
-    document.getElementById('total-tf-disetor').textContent = formatRupiah(totalTfDisetor);
-    document.getElementById('sisa-global').textContent = formatRupiah(sisaSetoranGlobal);
-    document.getElementById('sisa-global').style.color = sisaSetoranGlobal > 0 ? 'red' : 'green';
-  }
-
-  function showRekapTable(transList) {
-    let html = '<h3>Rekap Per Agen (Tagihan vs Setoran)</h3>';
-    const agentRecap = {};
-    agents.forEach(name => { agentRecap[name] = { tagihan: 0, setoran: 0 }; });
-    transList.forEach(t => {
-      const name = t.agentName;
-      if (!agentRecap[name]) agentRecap[name] = { tagihan: 0, setoran: 0 };
-      if (t.type === 'ambil') agentRecap[name].tagihan += (parseInt(t.tagihan) || 0);
-      if (t.type === 'setor') agentRecap[name].setoran += (parseInt(t.nominalSetor) || 0);
-    });
-    html += `<table><tr><th>Agen</th><th>Total Tagihan</th><th>Total Setoran</th><th>Sisa Hutang</th></tr>`;
-    for (let name in agentRecap) {
-      const r = agentRecap[name];
-      const sisa = r.tagihan - r.setoran;
-      const color = sisa > 0 ? 'color:red;' : 'color:green;';
-      if (r.tagihan > 0 || r.setoran > 0) {
-        html += `<tr><td>${name}</td><td>${formatRupiah(r.tagihan)}</td><td>${formatRupiah(r.setoran)}</td><td style="${color}"><strong>${formatRupiah(sisa)}</strong></td></tr>`;
-      }
-    }
-    html += '</table>';
-
-    html += '<h3>Riwayat Transaksi</h3><table><tr><th>Tanggal</th><th>Agen</th><th>Jenis</th><th>V3</th><th>V5</th><th>Nominal</th><th>Aksi</th></tr>';
-    [...transList].reverse().forEach(t => {
-      const date = t.tglAmbil || t.tglSetor || '-';
-      const jenis = t.type === 'ambil' ? 'Pengambilan' : 'Penyetoran';
-      const v3 = t.v3 || '-';
-      const v5 = t.v5 || '-';
-      const nominal = t.type === 'ambil' ? formatRupiah(t.tagihan || 0) : formatRupiah(t.nominalSetor || 0);
-      const editBtn = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>`;
-      const deleteBtn = getUserRole() === 'andi'
-        ? `<button class="delete" onclick="deleteTransaction('${t.id}')">Hapus</button>`
-        : '';
-      const action = t.id ? `${editBtn} ${deleteBtn}` : '';
-      html += `<tr><td>${date}</td><td>${t.agentName}</td><td>${jenis}</td><td>${v3}</td><td>${v5}</td><td>${nominal}</td><td>${action}</td></tr>`;
-    });
-    html += '</table>';
-    document.getElementById('rekapContent').innerHTML = html;
-  }
-
-  function loadRekap() {
-    const today = new Date().toISOString().split("T")[0];
-    if (!document.getElementById('filterTglAwal').value) document.getElementById('filterTglAwal').value = today;
-    if (!document.getElementById('filterTglAkhir').value) document.getElementById('filterTglAkhir').value = today;
-    updateRekapBox(transactions);
-    showRekapTable(transactions);
-  }
-
-  // === CATATAN: Edit & Hapus Berdasarkan ID ===
-  function loadNotes() {
-    db.ref('notes').on('value', (snap) => {
-      const data = snap.val();
-      const list = document.getElementById('notesList');
-      list.innerHTML = '';
-      const currentUser = getUserRole();
-
-      if (data) {
-        const notes = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
-        notes.forEach(n => {
-          const div = document.createElement('div');
-          div.className = 'note-item';
-
-          // Tombol Edit selalu muncul untuk andi, risman, anto
-          const editButton = `<button class="edit" onclick="editNote('${n.id}', '${escapeHtml(n.text)}')">Edit</button>`;
-
-          // Hapus hanya untuk andi
-          const deleteButton = currentUser === 'andi'
-            ? `<button class="delete" onclick="deleteNote('${n.id}')">Hapus</button>`
-            : '';
-
-          // Gabungkan tombol
-          const actions = `${editButton} ${deleteButton}`;
-
-          div.innerHTML = `
-            <div>${n.text.replace(/\n/g, '<br>')}</div>
-            <div class="note-footer">Tanggal: ${new Date(n.timestamp).toLocaleString()}</div>
-            ${actions}
-          `;
-          list.appendChild(div);
-        });
-      } else {
-        list.innerHTML = '<p>Tidak ada catatan.</p>';
-      }
-    });
-  }
-
-  // Fungsi bantu untuk amankan HTML
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  function editNote(id, currentText) {
-    const newText = prompt("Edit catatan:", currentText);
-    if (newText === null) return; // Batal
-    if (newText.trim() === '') {
-      alert("Catatan tidak boleh kosong!");
-      return;
-    }
-    db.ref('notes').child(id).update({ text: newText, timestamp: new Date().toISOString() })
-      .then(() => alert("Catatan berhasil diperbarui!"))
-      .catch(err => console.error("Gagal edit catatan:", err));
-  }
-
-  function addNote() {
-    const text = document.getElementById('newNote').value.trim();
-    if (!text) { alert("Tulis dulu catatannya!"); return; }
-    db.ref('notes').push({ text, timestamp: new Date().toISOString() });
-    document.getElementById('newNote').value = '';
-  }
-
-  function deleteNote(id) {
-    if (confirm("Hapus catatan ini?")) {
-      db.ref('notes').child(id).remove()
-        .then(() => alert("Catatan dihapus."))
-        .catch(err => console.error("Gagal hapus catatan:", err));
-    }
-  }
+    const firebaseConfig = {
+        apiKey: "AIzaSyCQG4Jnw6oQSMcXdOUIDOhxMVL-ykvXV7A",
+        authDomain: "pacific-byte-407704.firebaseapp.com",
+        databaseURL: "https://pacific-byte-407704-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "pacific-byte-407704",
+        storageBucket: "pacific-byte-407704.firebasestorage.app",
+        messagingSenderId: "979756373437",
+        appId: "1:979756373437:web:f27203cb2f144108d12ed4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const HARGA_GLOBAL_V3 = 2400;
+    const HARGA_GLOBAL_V5 = 4000;
+
+    // Cek role pengguna
+    function getUserRole() {
+        return localStorage.getItem('username');
+    }
+
+    function login() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+
+        let isValid = false;
+        let role = '';
+
+        if (user === 'andi' && pass === 'paswordx') {
+            isValid = true;
+            role = 'admin';
+        } else if (user === 'risman' && pass === 'sahrul') {
+            isValid = true;
+            role = 'user';
+        } else if (user === 'anto' && pass === 'afzal') {
+            isValid = true;
+            role = 'user';
+        }
+
+        if (isValid) {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('username', user);
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('currentUserDisplay').textContent = user;
+            loadAgents();
+            loadStok();
+            loadTransactions();
+            loadNotes();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+
+    function logout() {
+        if (confirm("Yakin ingin logout?")) {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('username');
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+    }
+
+    window.onload = function() {
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('currentUserDisplay').textContent = localStorage.getItem('username');
+            loadAgents();
+            loadStok();
+            loadTransactions();
+            loadNotes();
+        }
+    };
+
+    function openTab(evt, tabName) {
+        const tabs = document.getElementsByClassName("tabcontent");
+        for (let i = 0; i < tabs.length; i++) { tabs[i].style.display = "none"; }
+        const tablinks = document.getElementsByClassName("tablinks");
+        for (let i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+        document.getElementById(tabName).style.display = "block";
+        if (evt) evt.currentTarget.className += " active";
+
+        if (tabName === 'Rekap') {
+            loadRekap();
+        }
+    }
+
+    const agents = ["radiah", "ibu rostini", "ibu mila", "mira", "mama arham", "jusra wira", "ibu putri", "bang adi", "ibu nayla", "ibu hasna", "ibu asnita", "ibu ayu", "ibu Rika", "pak risman", "afzal", "pak jusriadi", "ibu ira", "pak sulaiman", "ibu ardilla", "ibu ennar"];
+
+    function loadAgents() {
+        const select = document.getElementById('agentSelect');
+        const table = document.getElementById('agentTable');
+        table.innerHTML = '<tr><th>No</th><th>Nama Agen</th></tr>';
+        select.innerHTML = '';
+        agents.forEach((name, idx) => {
+            const no = idx + 1;
+            const opt = document.createElement('option');
+            opt.value = no;
+            opt.textContent = `${no}. ${name}`;
+            select.appendChild(opt);
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${no}</td><td>${name}</td>`;
+            table.appendChild(row);
+        });
+    }
+
+    function addAgent() {
+        const newName = document.getElementById('newAgent').value.trim();
+        if (newName && !agents.includes(newName.toLowerCase())) {
+            agents.push(newName);
+            db.ref('agents').set(agents);
+            loadAgents();
+            document.getElementById('newAgent').value = '';
+        }
+    }
+
+    function formatRupiah(angka) {
+        return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function updateTagihan() {
+        const v3 = parseInt(document.getElementById('v3Qty').value) || 0;
+        const v5 = parseInt(document.getElementById('v5Qty').value) || 0;
+        const total = (v3 * 2550) + (v5 * 4250);
+        document.getElementById('tagihan').value = formatRupiah(total);
+    }
+
+    let transactions = [];
+    let stok = { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
+    let editMode = false;
+    let editStokMode = false;
+
+    function submitPengambilan() {
+        const agentId = document.getElementById('agentSelect').value;
+        const tglAmbil = document.getElementById('tglAmbil').value;
+        const v3 = parseInt(document.getElementById('v3Qty').value) || 0;
+        const v5 = parseInt(document.getElementById('v5Qty').value) || 0;
+        const tagihan = (v3 * 2550) + (v5 * 4250);
+        const agentName = agents[agentId - 1];
+
+        if (!tglAmbil || (v3 === 0 && v5 === 0)) {
+            alert("Isi tanggal dan jumlah barang.");
+            return;
+        }
+
+        const trans = { type: 'ambil', agentId, agentName, tglAmbil, v3, v5, tagihan, timestamp: new Date().toISOString() };
+
+        if (editMode) {
+            const id = document.getElementById('editTransId').value;
+            db.ref('transactions').child(id).update(trans).then(() => {
+                alert("Transaksi berhasil diperbarui!");
+                exitEditMode();
+                loadTransactions();
+                loadStok();
+            });
+        } else {
+            db.ref('transactions').push(trans).then(() => {
+                alert("Pengambilan berhasil dicatat!");
+                resetForm();
+                loadStok();
+            }).catch(err => {
+                console.error("Gagal menyimpan transaksi:", err);
+                alert("Gagal menyimpan data.");
+            });
+        }
+    }
+
+    function submitPenyetoran() {
+        const agentId = document.getElementById('agentSelect').value;
+        const tglSetor = document.getElementById('tglSetor').value;
+        const nominalSetor = parseInt(document.getElementById('nominalSetor').value) || 0;
+        const agentName = agents[agentId - 1];
+
+        if (!tglSetor || nominalSetor <= 0) {
+            alert("Isi tanggal dan nominal setoran.");
+            return;
+        }
+
+        const trans = { type: 'setor', agentId, agentName, tglSetor, nominalSetor, timestamp: new Date().toISOString() };
+
+        if (editMode) {
+            const id = document.getElementById('editTransId').value;
+            db.ref('transactions').child(id).update(trans).then(() => {
+                alert("Setoran berhasil diperbarui!");
+                exitEditMode();
+                loadTransactions();
+            });
+        } else {
+            db.ref('transactions').push(trans).then(() => {
+                alert("Penyetoran berhasil dicatat!");
+                resetForm();
+            }).catch(err => {
+                console.error("Gagal menyimpan setoran:", err);
+                alert("Gagal menyimpan data.");
+            });
+        }
+    }
+
+    function editTransaction(id) {
+        const trans = transactions.find(t => t.id === id);
+        if (!trans) return;
+        enterEditMode(id);
+        if (trans.type === 'ambil') {
+            document.getElementById('agentSelect').value = trans.agentId;
+            document.getElementById('tglAmbil').value = trans.tglAmbil;
+            document.getElementById('v3Qty').value = trans.v3;
+            document.getElementById('v5Qty').value = trans.v5;
+            updateTagihan();
+        } else if (trans.type === 'setor') {
+            document.getElementById('agentSelect').value = trans.agentId;
+            document.getElementById('tglSetor').value = trans.tglSetor;
+            document.getElementById('nominalSetor').value = trans.nominalSetor;
+        }
+        openTab(null, 'Transaksi');
+    }
+
+    function deleteTransaction(id) {
+        if (confirm("Hapus transaksi ini?")) {
+            db.ref('transactions').child(id).remove().then(() => {
+                alert("Transaksi dihapus.");
+                loadTransactions();
+                loadStok();
+            });
+        }
+    }
+
+    function enterEditMode(id) {
+        editMode = true;
+        document.getElementById('editTransId').value = id;
+        document.getElementById('submitBtnAmbil').classList.add('hidden');
+        document.getElementById('submitBtnSetor').classList.add('hidden');
+        document.getElementById('saveEditBtn').classList.remove('hidden');
+        document.getElementById('cancelEditBtn').classList.remove('hidden');
+    }
+
+    function exitEditMode() {
+        editMode = false;
+        document.getElementById('editTransId').value = '';
+        document.getElementById('submitBtnAmbil').classList.remove('hidden');
+        document.getElementById('submitBtnSetor').classList.remove('hidden');
+        document.getElementById('saveEditBtn').classList.add('hidden');
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+    }
+
+    function cancelEdit() {
+        if (confirm("Batalkan perubahan?")) {
+            exitEditMode();
+            resetForm();
+        }
+    }
+
+    function saveEdit() {
+        const id = document.getElementById('editTransId').value;
+        const trans = transactions.find(t => t.id === id);
+        if (trans.type === 'ambil') submitPengambilan();
+        else submitPenyetoran();
+    }
+
+    function resetForm() {
+        document.getElementById('v3Qty').value = '0';
+        document.getElementById('v5Qty').value = '0';
+        document.getElementById('nominalSetor').value = '';
+        document.getElementById('tagihan').value = '';
+        document.getElementById('tglAmbil').value = '';
+        document.getElementById('tglSetor').value = '';
+    }
+
+    // === EDIT STOK AWAL ===
+    function enableEditStok() {
+        if (getUserRole() !== 'andi') {
+            alert("Hanya Andi yang bisa mengedit stok awal.");
+            return;
+        }
+        if (!confirm("Anda yakin ingin mengedit stok awal?")) return;
+
+        editStokMode = true;
+        document.getElementById('stokAwalV3').disabled = false;
+        document.getElementById('stokAwalV5').disabled = false;
+        document.getElementById('editStokBtn').classList.add('hidden');
+        document.getElementById('saveStokBtn').classList.remove('hidden');
+        document.getElementById('cancelStokBtn').classList.remove('hidden');
+    }
+
+    function saveStokAwal() {
+        if (!editStokMode) return;
+
+        const v3 = parseInt(document.getElementById('stokAwalV3').value) || 0;
+        const v5 = parseInt(document.getElementById('stokAwalV5').value) || 0;
+
+        if (v3 < stok.keluarV3 || v5 < stok.keluarV5) {
+            alert("Stok awal tidak boleh kurang dari jumlah barang keluar!");
+            return;
+        }
+
+        if (confirm(`Simpan stok awal baru?\nV3: ${v3}, V5: ${v5}`)) {
+            stok.v3 = v3;
+            stok.v5 = v5;
+            db.ref('stok').update({ v3, v5 }).then(() => {
+                alert("Stok awal berhasil diperbarui!");
+                exitEditStok();
+                loadStok();
+            }).catch(err => {
+                console.error("Gagal update stok:", err);
+                alert("Gagal menyimpan ke database.");
+            });
+        }
+    }
+
+    function cancelEditStok() {
+        if (confirm("Batalkan perubahan stok awal?")) {
+            exitEditStok();
+            document.getElementById('stokAwalV3').value = stok.v3;
+            document.getElementById('stokAwalV5').value = stok.v5;
+        }
+    }
+
+    function exitEditStok() {
+        editStokMode = false;
+        document.getElementById('stokAwalV3').disabled = true;
+        document.getElementById('stokAwalV5').disabled = true;
+        document.getElementById('editStokBtn').classList.remove('hidden');
+        document.getElementById('saveStokBtn').classList.add('hidden');
+        document.getElementById('cancelStokBtn').classList.add('hidden');
+    }
+
+    function loadStok() {
+        db.ref('stok').once('value').then(snap => {
+            const data = snap.val() || { v3: 0, v5: 0 };
+            stok.v3 = data.v3 || 0;
+            stok.v5 = data.v5 || 0;
+
+            return db.ref('transactions').once('value');
+        }).then(snap => {
+            const trans = snap.val();
+            let keluarV3 = 0;
+            let keluarV5 = 0;
+
+            if (trans) {
+                for (let key in trans) {
+                    const t = trans[key];
+                    if (t.type === 'ambil') {
+                        keluarV3 += parseInt(t.v3) || 0;
+                        keluarV5 += parseInt(t.v5) || 0;
+                    }
+                }
+            }
+
+            stok.keluarV3 = keluarV3;
+            stok.keluarV5 = keluarV5;
+
+            document.getElementById('awalV3').textContent = stok.v3;
+            document.getElementById('awalV5').textContent = stok.v5;
+            document.getElementById('keluarV3').textContent = keluarV3;
+            document.getElementById('keluarV5').textContent = keluarV5;
+            document.getElementById('sisaV3').textContent = stok.v3 - keluarV3;
+            document.getElementById('sisaV5').textContent = stok.v5 - keluarV5;
+
+            if (!editStokMode) {
+                document.getElementById('stokAwalV3').value = stok.v3;
+                document.getElementById('stokAwalV5').value = stok.v5;
+            }
+        }).catch(err => {
+            console.error("Error loading stok:", err);
+        });
+    }
+
+    function loadTransactions() {
+        db.ref('transactions').on('value', (snap) => {
+            const data = snap.val();
+            transactions = [];
+            for (let key in data) {
+                transactions.push({ id: key, ...data[key] });
+            }
+            transactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            if (document.getElementById('Rekap').style.display === 'block') {
+                loadRekap();
+            }
+        });
+    }
+    
+    // === REKAP & SIKLUS RUMUS ===
+
+    function filterRekap() {
+        const tglAwal = document.getElementById('filterTglAwal').value;
+        const tglAkhir = document.getElementById('filterTglAkhir').value;
+        let filtered = transactions;
+        if (tglAwal) {
+            filtered = filtered.filter(t => {
+                const tgl = t.tglAmbil || t.tglSetor;
+                return tgl && tgl >= tglAwal;
+            });
+        }
+        if (tglAkhir) {
+            filtered = filtered.filter(t => {
+                const tgl = t.tglAmbil || t.tglSetor;
+                return tgl && tgl <= tglAkhir;
+            });
+        }
+        updateRekapBox(filtered);
+        showRekapTable(filtered);
+    }
+
+    function resetFilter() {
+        document.getElementById('filterTglAwal').value = '';
+        document.getElementById('filterTglAkhir').value = '';
+        updateRekapBox(transactions);
+        showRekapTable(transactions);
+    }
+
+    function updateRekapBox(transList) {
+        let totalTagihanBelumLunas = 0;
+        let totalSetoran = 0;
+        let totalTfDisetor = 0;
+
+        // Perhitungan "Setoran ke Global" berdasarkan STOK AWAL, tidak dari transaksi
+        let totalSetoranGlobal = (stok.v3 * HARGA_GLOBAL_V3) + (stok.v5 * HARGA_GLOBAL_V5);
+
+        const agentBalance = {};
+        agents.forEach(a => agentBalance[a] = 0);
+        
+        transList.forEach(t => {
+            if (t.type === 'ambil') {
+                agentBalance[t.agentName] += t.tagihan;
+            } else if (t.type === 'setor') {
+                agentBalance[t.agentName] -= t.nominalSetor;
+                totalSetoran += t.nominalSetor;
+            }
+        });
+        
+        for (let name in agentBalance) {
+            if (agentBalance[name] > 0) {
+                totalTagihanBelumLunas += agentBalance[name];
+            }
+        }
+
+        db.ref('tf').once('value').then(snap => {
+            const tfData = snap.val();
+            if (tfData) {
+                for (let key in tfData) {
+                    totalTfDisetor += parseInt(tfData[key].nominal);
+                }
+            }
+
+            const sisaSetoranGlobal = totalSetoranGlobal - totalTfDisetor;
+
+            document.getElementById('total-tagihan').textContent = formatRupiah(totalTagihanBelumLunas);
+            document.getElementById('total-setoran').textContent = formatRupiah(totalSetoran);
+            document.getElementById('total-global-tagihan').textContent = formatRupiah(totalSetoranGlobal);
+            document.getElementById('total-tf-disetor-display').textContent = formatRupiah(totalTfDisetor);
+            document.getElementById('sisa-global').textContent = formatRupiah(sisaSetoranGlobal);
+            document.getElementById('sisa-global').style.color = sisaSetoranGlobal > 0 ? 'red' : 'green';
+        });
+    }
+
+    function addTf() {
+        const tgl = document.getElementById('tfTgl').value;
+        const nominal = parseInt(document.getElementById('tfNominal').value);
+        if (!tgl || !nominal) {
+            alert("Harap isi tanggal dan nominal TF.");
+            return;
+        }
+
+        db.ref('tf').push({
+            tgl,
+            nominal
+        }).then(() => {
+            alert("Catatan TF berhasil ditambahkan!");
+            document.getElementById('tfTgl').value = '';
+            document.getElementById('tfNominal').value = '';
+            loadTfNotes();
+            updateRekapBox(transactions);
+        }).catch(err => {
+            console.error("Gagal menyimpan TF:", err);
+            alert("Gagal menyimpan catatan TF.");
+        });
+    }
+    
+    function loadTfNotes() {
+        const tfList = document.getElementById('tfList');
+        db.ref('tf').on('value', snap => {
+            const data = snap.val();
+            tfList.innerHTML = '<h3>Riwayat TF</h3>';
+            if (data) {
+                let tableHtml = '<table><tr><th>Tanggal</th><th>Nominal</th><th>Aksi</th></tr>';
+                for (let key in data) {
+                    const item = data[key];
+                    const deleteBtn = getUserRole() === 'andi'
+                        ? `<button class="delete" onclick="deleteTf('${key}')">Hapus</button>`
+                        : '';
+                    tableHtml += `<tr><td>${item.tgl}</td><td>${formatRupiah(item.nominal)}</td><td>${deleteBtn}</td></tr>`;
+                }
+                tableHtml += '</table>';
+                tfList.innerHTML += tableHtml;
+            } else {
+                tfList.innerHTML += '<p>Belum ada catatan TF.</p>';
+            }
+        });
+    }
+
+    function deleteTf(id) {
+        if (getUserRole() !== 'andi') {
+            alert("Hanya Andi yang bisa menghapus catatan TF.");
+            return;
+        }
+        if (confirm("Hapus catatan TF ini?")) {
+            db.ref('tf').child(id).remove().then(() => {
+                alert("Catatan TF dihapus.");
+                loadTfNotes();
+                updateRekapBox(transactions);
+            });
+        }
+    }
+
+    function showRekapTable(transList) {
+        let html = '<h3>Rekap Per Agen (Tagihan vs Setoran)</h3>';
+        const agentRecap = {};
+        agents.forEach(name => { agentRecap[name] = { tagihan: 0, setoran: 0 }; });
+        transList.forEach(t => {
+            const name = t.agentName;
+            if (!agentRecap[name]) agentRecap[name] = { tagihan: 0, setoran: 0 };
+            if (t.type === 'ambil') agentRecap[name].tagihan += (parseInt(t.tagihan) || 0);
+            if (t.type === 'setor') agentRecap[name].setoran += (parseInt(t.nominalSetor) || 0);
+        });
+        html += `<table><tr><th>Agen</th><th>Total Tagihan</th><th>Total Setoran</th><th>Sisa Hutang</th></tr>`;
+        for (let name in agentRecap) {
+            const r = agentRecap[name];
+            const sisa = r.tagihan - r.setoran;
+            const color = sisa > 0 ? 'color:red;' : 'color:green;';
+            if (r.tagihan > 0 || r.setoran > 0) {
+                html += `<tr><td>${name}</td><td>${formatRupiah(r.tagihan)}</td><td>${formatRupiah(r.setoran)}</td><td style="${color}"><strong>${formatRupiah(sisa)}</strong></td></tr>`;
+            }
+        }
+        html += '</table>';
+
+        html += '<h3>Riwayat Transaksi</h3><table><tr><th>Tanggal</th><th>Agen</th><th>Jenis</th><th>V3</th><th>V5</th><th>Nominal</th><th>Aksi</th></tr>';
+        [...transList].reverse().forEach(t => {
+            const date = t.tglAmbil || t.tglSetor || '-';
+            const jenis = t.type === 'ambil' ? 'Pengambilan' : 'Penyetoran';
+            const v3 = t.v3 || '-';
+            const v5 = t.v5 || '-';
+            const nominal = t.type === 'ambil' ? formatRupiah(t.tagihan || 0) : formatRupiah(t.nominalSetor || 0);
+            const editBtn = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>`;
+            const deleteBtn = getUserRole() === 'andi'
+                ? `<button class="delete" onclick="deleteTransaction('${t.id}')">Hapus</button>`
+                : '';
+            const action = t.id ? `${editBtn} ${deleteBtn}` : '';
+            html += `<tr><td>${date}</td><td>${t.agentName}</td><td>${jenis}</td><td>${v3}</td><td>${v5}</td><td>${nominal}</td><td>${action}</td></tr>`;
+        });
+        html += '</table>';
+        document.getElementById('rekapContent').innerHTML = html;
+    }
+
+    function loadRekap() {
+        const today = new Date().toISOString().split("T")[0];
+        if (!document.getElementById('filterTglAwal').value) document.getElementById('filterTglAwal').value = today;
+        if (!document.getElementById('filterTglAkhir').value) document.getElementById('filterTglAkhir').value = today;
+        loadStok().then(() => {
+            updateRekapBox(transactions);
+            showRekapTable(transactions);
+            loadTfNotes();
+        });
+    }
+
+    // === CATATAN: Edit & Hapus Berdasarkan ID ===
+    function loadNotes() {
+        db.ref('notes').on('value', (snap) => {
+            const data = snap.val();
+            const list = document.getElementById('notesList');
+            list.innerHTML = '';
+            const currentUser = getUserRole();
+
+            if (data) {
+                const notes = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
+                notes.forEach(n => {
+                    const div = document.createElement('div');
+                    div.className = 'note-item';
+
+                    // Tombol Edit selalu muncul untuk andi, risman, anto
+                    const editButton = `<button class="edit" onclick="editNote('${n.id}', '${escapeHtml(n.text)}')">Edit</button>`;
+
+                    // Hapus hanya untuk andi
+                    const deleteButton = currentUser === 'andi'
+                        ? `<button class="delete" onclick="deleteNote('${n.id}')">Hapus</button>`
+                        : '';
+
+                    // Gabungkan tombol
+                    const actions = `${editButton} ${deleteButton}`;
+
+                    div.innerHTML = `
+                        <div>${n.text.replace(/\n/g, '<br>')}</div>
+                        <div class="note-footer">Tanggal: ${new Date(n.timestamp).toLocaleString()}</div>
+                        ${actions}
+                    `;
+                    list.appendChild(div);
+                });
+            } else {
+                list.innerHTML = '<p>Tidak ada catatan.</p>';
+            }
+        });
+    }
+
+    // Fungsi bantu untuk amankan HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function editNote(id, currentText) {
+        const newText = prompt("Edit catatan:", currentText);
+        if (newText === null) return; // Batal
+        if (newText.trim() === '') {
+            alert("Catatan tidak boleh kosong!");
+            return;
+        }
+        db.ref('notes').child(id).update({ text: newText, timestamp: new Date().toISOString() })
+            .then(() => alert("Catatan berhasil diperbarui!"))
+            .catch(err => console.error("Gagal edit catatan:", err));
+    }
+
+    function addNote() {
+        const text = document.getElementById('newNote').value.trim();
+        if (!text) { alert("Tulis dulu catatannya!"); return; }
+        db.ref('notes').push({ text, timestamp: new Date().toISOString() });
+        document.getElementById('newNote').value = '';
+    }
+
+    function deleteNote(id) {
+        if (confirm("Hapus catatan ini?")) {
+            db.ref('notes').child(id).remove()
+                .then(() => alert("Catatan dihapus."))
+                .catch(err => console.error("Gagal hapus catatan:", err));
+        }
+    }
 </script>
 </body>
 </html>
