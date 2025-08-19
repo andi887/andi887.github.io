@@ -65,7 +65,6 @@
             <span>🌐 Online & Sinkron</span>
         </div>
     </div>
-
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg flex items-center space-x-3">
@@ -73,7 +72,6 @@
             <span>Menyinkronkan data...</span>
         </div>
     </div>
-
     <!-- Login Screen -->
     <div id="loginScreen" class="container mx-auto px-4 max-w-md">
         <div class="text-center mb-8">
@@ -83,29 +81,24 @@
                 <span class="bg-white/20 px-2 py-1 rounded">Real-time Sync</span>
             </div>
         </div>
-
         <div class="bg-white rounded-2xl card-shadow p-8">
             <form id="loginForm">
                 <div class="mb-6">
                     <label class="block text-gray-700 font-semibold mb-2">Username:</label>
                     <input type="text" id="username" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="Masukkan username">
                 </div>
-                
                 <div class="mb-6">
                     <label class="block text-gray-700 font-semibold mb-2">Password:</label>
                     <input type="password" id="password" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="Masukkan password">
                 </div>
-
                 <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 px-6 rounded-lg btn-hover transition-all duration-300 flex items-center justify-center">
                     <span id="loginBtnText">🚀 Masuk</span>
                     <div id="loginSpinner" class="hidden loading-spinner ml-2"></div>
                 </button>
             </form>
-
             <div id="loginError" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 Username atau password salah!
             </div>
-
             <div class="mt-6 text-center text-sm text-gray-600">
                 <p><strong>Demo Login:</strong></p>
                 <p>Admin: kelas4 / wali</p>
@@ -113,7 +106,6 @@
             </div>
         </div>
     </div>
-
     <!-- Main Application -->
     <div id="mainApp" class="hidden container mx-auto px-4 max-w-4xl">
         <!-- Header with Logout -->
@@ -128,8 +120,7 @@
                 🚪 Logout
             </button>
         </div>
-
-        <!-- Admin Panel (Only for Admin) -->
+        <!-- Admin Panel (Only for kelas4) -->
         <div id="adminPanel" class="hidden bg-white rounded-2xl card-shadow p-6 mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">👨‍💼 Panel Admin - Real-time</h2>
             <div class="grid md:grid-cols-3 gap-4">
@@ -143,8 +134,14 @@
                     🗑️ Hapus Semua
                 </button>
             </div>
+            <!-- Filter Nama Anak (Hanya untuk kelas4) -->
+            <div class="mt-4">
+                <label class="block text-gray-700 text-sm font-medium mb-1">Filter Nama Anak:</label>
+                <select id="filterNamaAnak" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-700 text-sm" disabled>
+                    <option value="">Semua Anak</option>
+                </select>
+            </div>
         </div>
-
         <!-- Real-time Stats -->
         <div class="bg-white rounded-2xl card-shadow p-6 mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4">📈 Statistik Real-time</h2>
@@ -167,7 +164,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Journal List (For viewing saved journals) -->
         <div id="journalList" class="hidden bg-white rounded-2xl card-shadow p-6 mb-8">
             <div class="flex justify-between items-center mb-4">
@@ -185,7 +181,6 @@
                 <!-- Journal entries will be populated here -->
             </div>
         </div>
-
         <!-- Form Card -->
         <div id="journalFormCard" class="bg-white rounded-2xl card-shadow p-8">
             <form id="journalForm">
@@ -208,7 +203,6 @@
                         </select>
                     </div>
                 </div>
-
                 <!-- Tanggal -->
                 <div class="grid md:grid-cols-3 gap-4 mb-8">
                     <div>
@@ -238,7 +232,6 @@
                         <input type="number" id="tahun" min="2020" max="2030" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="YYYY">
                     </div>
                 </div>
-
                 <!-- Kegiatan Harian -->
                 <div class="space-y-8">
                     <!-- 1. Bangun Pagi -->
@@ -250,7 +243,6 @@
                             <input type="time" id="bangunPagi" class="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:outline-none input-focus transition-all">
                         </div>
                     </div>
-
                     <!-- 2. Beribadah -->
                     <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-l-4 border-green-400">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -279,7 +271,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- 3. Berolahraga -->
                     <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-xl border-l-4 border-blue-400">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -290,7 +281,6 @@
                             <input type="number" id="olahraga" min="0" max="300" class="w-full md:w-48 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none input-focus transition-all" placeholder="Contoh: 30">
                         </div>
                     </div>
-
                     <!-- 4. Makan Sehat -->
                     <div class="bg-gradient-to-r from-red-50 to-pink-50 p-6 rounded-xl border-l-4 border-red-400">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -301,7 +291,6 @@
                             <textarea id="makanSehat" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:outline-none input-focus transition-all resize-none" placeholder="Contoh: Nasi, sayur bayam, ikan, buah apel..."></textarea>
                         </div>
                     </div>
-
                     <!-- 5. Gemar Belajar -->
                     <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border-l-4 border-purple-400">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -312,7 +301,6 @@
                             <textarea id="belajar" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all resize-none" placeholder="Contoh: Matematika bab perkalian, membaca buku cerita..."></textarea>
                         </div>
                     </div>
-
                     <!-- 6. Bermasyarakat -->
                     <div class="bg-gradient-to-r from-teal-50 to-green-50 p-6 rounded-xl border-l-4 border-teal-400">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -323,7 +311,6 @@
                             <textarea id="bermasyarakat" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none input-focus transition-all resize-none" placeholder="Contoh: Membersihkan halaman rumah, membantu tetangga..."></textarea>
                         </div>
                     </div>
-
                     <!-- 7. Tidur Cepat -->
                     <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-l-4 border-indigo-400">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -334,7 +321,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Submit Button -->
                 <div class="mt-10 flex justify-center space-x-4">
                     <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-4 px-8 rounded-xl btn-hover transition-all duration-300 text-lg flex items-center">
@@ -347,14 +333,12 @@
                 </div>
             </form>
         </div>
-
         <!-- Success Message -->
         <div id="successMessage" class="hidden mt-6 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-xl text-center">
             <h3 class="font-bold text-lg">✅ Jurnal Berhasil Disimpan ke Cloud!</h3>
             <p>Data tersinkronisasi real-time di semua perangkat.</p>
         </div>
     </div>
-
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -365,19 +349,18 @@
             messagingSenderId: "520862158793",
             appId: "1:520862158793:web:8c527473b9accfc3a06218"
         };
-
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
         // User credentials
         const users = {
             'kelas4': { password: 'wali', role: 'admin', name: 'Wali Kelas' },
             'orangtua': { password: 'lamanda', role: 'parent', name: 'Orang Tua' }
         };
-
         let currentUser = null;
         let journalsListener = null;
+        let allJournals = []; // Simpan semua dokumen
+        let uniqueNames = new Set(); // Simpan nama anak unik
 
         // DOM Elements
         const loginScreen = document.getElementById('loginScreen');
@@ -394,7 +377,6 @@
         function showLoading() {
             loadingOverlay.classList.remove('hidden');
         }
-
         function hideLoading() {
             loadingOverlay.classList.add('hidden');
         }
@@ -402,41 +384,41 @@
         // Login functionality
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
+
             // Show loading
             document.getElementById('loginBtnText').textContent = 'Memverifikasi...';
             document.getElementById('loginSpinner').classList.remove('hidden');
-            
+
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             if (users[username] && users[username].password === password) {
                 currentUser = users[username];
                 currentUser.username = username;
-                
+
                 // Hide login, show main app
                 loginScreen.classList.add('hidden');
                 mainApp.classList.remove('hidden');
-                
+
                 // Update user role display
                 userRole.textContent = currentUser.name;
-                
-                // Show admin panel if admin
-                if (currentUser.role === 'admin') {
+
+                // Show admin panel only for 'kelas4'
+                if (currentUser.username === 'kelas4') {
                     adminPanel.classList.remove('hidden');
+                } else {
+                    adminPanel.classList.add('hidden');
                 }
-                
+
                 // Initialize the app
                 await initializeApp();
-                
                 loginError.classList.add('hidden');
             } else {
                 loginError.classList.remove('hidden');
             }
-            
+
             // Reset login button
             document.getElementById('loginBtnText').textContent = '🚀 Masuk';
             document.getElementById('loginSpinner').classList.add('hidden');
@@ -449,14 +431,13 @@
                 journalsListener();
                 journalsListener = null;
             }
-            
             currentUser = null;
             loginScreen.classList.remove('hidden');
             mainApp.classList.add('hidden');
             adminPanel.classList.add('hidden');
             journalList.classList.add('hidden');
             journalFormCard.classList.remove('hidden');
-            
+
             // Reset login form
             loginForm.reset();
             loginError.classList.add('hidden');
@@ -465,20 +446,17 @@
         // Initialize app after login
         async function initializeApp() {
             showLoading();
-            
             // Set tanggal hari ini secara otomatis
             const today = new Date();
             document.getElementById('tanggal').value = today.getDate();
             document.getElementById('tahun').value = today.getFullYear();
-            
             // Set bulan hari ini
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             document.getElementById('bulan').value = months[today.getMonth()];
-            
+
             // Start real-time listening
             startRealtimeListener();
-            
             hideLoading();
         }
 
@@ -487,12 +465,18 @@
             journalsListener = db.collection('journals')
                 .orderBy('timestamp', 'desc')
                 .onSnapshot((snapshot) => {
+                    // Simpan semua dokumen
+                    allJournals = snapshot.docs;
                     updateStats(snapshot.docs);
-                    
+
                     // Update total journals count
                     document.getElementById('totalJournals').textContent = snapshot.docs.length;
-                    
-                    // If journal list is visible, update it
+
+                    // Ambil nama anak unik
+                    uniqueNames = new Set(snapshot.docs.map(doc => doc.data().namaAnak).filter(Boolean));
+                    populateNameFilter();
+
+                    // Update tampilan jika sedang di halaman jurnal
                     if (!journalList.classList.contains('hidden')) {
                         displayJournalsRealtime(snapshot.docs);
                     }
@@ -508,32 +492,26 @@
             const todayStr = `${today.getDate()} ${getMonthName(today.getMonth())} ${today.getFullYear()}`;
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
-            
             let todayCount = 0;
             let monthCount = 0;
             let lastUpdate = null;
-            
             docs.forEach(doc => {
                 const data = doc.data();
                 const docDate = `${data.tanggal} ${data.bulan} ${data.tahun}`;
-                
                 // Count today's journals
                 if (docDate === todayStr) {
                     todayCount++;
                 }
-                
                 // Count this month's journals
                 const docMonth = getMonthIndex(data.bulan);
                 if (docMonth === currentMonth && parseInt(data.tahun) === currentYear) {
                     monthCount++;
                 }
-                
                 // Get last update
                 if (data.timestamp && (!lastUpdate || data.timestamp.toDate() > lastUpdate)) {
                     lastUpdate = data.timestamp.toDate();
                 }
             });
-            
             document.getElementById('statsTotal').textContent = docs.length;
             document.getElementById('statsToday').textContent = todayCount;
             document.getElementById('statsThisMonth').textContent = monthCount;
@@ -547,7 +525,6 @@
                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             return months[index];
         }
-
         function getMonthIndex(monthName) {
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -584,18 +561,15 @@
         });
 
         document.getElementById('clearAllData').addEventListener('click', async function() {
-            if (currentUser.role !== 'admin') return;
-            
+            if (currentUser.username !== 'kelas4') return;
             if (confirm('PERINGATAN: Ini akan menghapus SEMUA data jurnal secara permanen. Yakin?')) {
                 showLoading();
                 try {
                     const snapshot = await db.collection('journals').get();
                     const batch = db.batch();
-                    
                     snapshot.docs.forEach(doc => {
                         batch.delete(doc.ref);
                     });
-                    
                     await batch.commit();
                     alert('Semua data berhasil dihapus!');
                 } catch (error) {
@@ -626,21 +600,44 @@
         function showAllJournals() {
             journalFormCard.classList.add('hidden');
             journalList.classList.remove('hidden');
-            
             // The real-time listener will automatically update the display
         }
 
-        // Display journals in real-time
+        // Populate filter dropdown
+        function populateNameFilter() {
+            const filterSelect = document.getElementById('filterNamaAnak');
+            filterSelect.disabled = false;
+            filterSelect.innerHTML = '<option value="">Semua Anak</option>';
+            Array.from(uniqueNames)
+                .sort()
+                .forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    filterSelect.appendChild(option);
+                });
+        }
+
+        // Display journals in real-time with filter
         function displayJournalsRealtime(docs) {
             const journalEntries = document.getElementById('journalEntries');
             journalEntries.innerHTML = '';
-            
-            if (docs.length === 0) {
-                journalEntries.innerHTML = '<p class="text-gray-500 text-center py-8">Belum ada jurnal yang tersimpan.</p>';
+
+            // Ambil nilai filter
+            const selectedName = document.getElementById('filterNamaAnak')?.value || '';
+            const filteredDocs = selectedName 
+                ? docs.filter(doc => doc.data().namaAnak === selectedName)
+                : docs;
+
+            if (filteredDocs.length === 0) {
+                const msg = selectedName 
+                    ? `<p class="text-gray-500 text-center py-8">Tidak ada jurnal untuk anak: <strong>${selectedName}</strong></p>`
+                    : '<p class="text-gray-500 text-center py-8">Belum ada jurnal yang tersimpan.</p>';
+                journalEntries.innerHTML = msg;
                 return;
             }
 
-            docs.forEach((doc) => {
+            filteredDocs.forEach((doc) => {
                 const journal = doc.data();
                 const journalCard = document.createElement('div');
                 journalCard.className = 'bg-gray-50 p-4 rounded-lg border hover:shadow-md transition-all';
@@ -664,7 +661,7 @@
                         Diinput oleh: ${journal.submittedByRole === 'admin' ? '👨‍💼 Admin' : '👨‍👩‍👧‍👦 Orang Tua'} 
                         (${journal.submittedBy})
                     </div>
-                    ${currentUser.role === 'admin' ? `
+                    ${currentUser.username === 'kelas4' ? `
                         <button onclick="deleteJournalFromFirestore('${doc.id}')" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
                             🗑️ Hapus
                         </button>
@@ -676,8 +673,7 @@
 
         // Delete journal from Firestore
         async function deleteJournalFromFirestore(docId) {
-            if (currentUser.role !== 'admin') return;
-            
+            if (currentUser.username !== 'kelas4') return;
             if (confirm('Yakin ingin menghapus jurnal ini?')) {
                 showLoading();
                 try {
@@ -693,13 +689,11 @@
 
         // Export data from Firestore
         async function exportJournalData() {
-            if (currentUser.role !== 'admin') return;
-            
+            if (currentUser.username !== 'kelas4') return;
             showLoading();
             try {
                 const snapshot = await db.collection('journals').orderBy('timestamp', 'desc').get();
                 const journals = [];
-                
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     journals.push({
@@ -708,15 +702,12 @@
                         timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : null
                     });
                 });
-                
                 const dataStr = JSON.stringify(journals, null, 2);
                 const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(dataBlob);
                 link.download = `jurnal_harian_export_${new Date().toISOString().split('T')[0]}.json`;
                 link.click();
-                
                 alert(`Berhasil export ${journals.length} jurnal!`);
             } catch (error) {
                 console.error('Error exporting data:', error);
@@ -728,11 +719,9 @@
         // Handle form submission to Firestore
         document.getElementById('journalForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             // Validasi form
             const requiredFields = ['namaAnak', 'kelas', 'tanggal', 'bulan', 'tahun'];
             let isValid = true;
-            
             requiredFields.forEach(field => {
                 const element = document.getElementById(field);
                 if (!element.value.trim()) {
@@ -742,16 +731,13 @@
                     element.style.borderColor = '#d1d5db';
                 }
             });
-            
             if (!isValid) {
                 alert('Mohon lengkapi data dasar (Nama, Kelas, dan Tanggal) terlebih dahulu!');
                 return;
             }
-            
             // Show loading on submit button
             document.getElementById('submitBtnText').textContent = 'Menyimpan ke Cloud...';
             document.getElementById('submitSpinner').classList.remove('hidden');
-            
             // Collect form data
             const formData = {
                 namaAnak: document.getElementById('namaAnak').value,
@@ -776,36 +762,28 @@
                 submittedByRole: currentUser.role,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
-            
             try {
                 // Save to Firestore
                 await db.collection('journals').add(formData);
-                
                 // Show success message
                 document.getElementById('successMessage').classList.remove('hidden');
-                
                 // Scroll to success message
                 document.getElementById('successMessage').scrollIntoView({ 
                     behavior: 'smooth' 
                 });
-                
                 // Reset form after 3 seconds
                 setTimeout(() => {
                     document.getElementById('journalForm').reset();
                     document.getElementById('successMessage').classList.add('hidden');
-                    
                     // Re-initialize date
                     initializeApp();
                 }, 3000);
-                
                 updateOnlineStatus(true);
-                
             } catch (error) {
                 console.error('Error saving journal:', error);
                 alert('Gagal menyimpan jurnal: ' + error.message);
                 updateOnlineStatus(false);
             }
-            
             // Reset submit button
             document.getElementById('submitBtnText').textContent = '💾 Simpan ke Cloud';
             document.getElementById('submitSpinner').classList.add('hidden');
@@ -820,14 +798,18 @@
             element.addEventListener('focus', function() {
                 this.parentElement.style.transform = 'scale(1.02)';
             });
-            
             element.addEventListener('blur', function() {
                 this.parentElement.style.transform = 'scale(1)';
             });
         });
 
+        // Event listener for filter
+        document.getElementById('filterNamaAnak').addEventListener('change', function() {
+            displayJournalsRealtime(allJournals);
+        });
+
         // Initialize online status
         updateOnlineStatus(navigator.onLine);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'971a380234b2fd2c',t:'MTc1NTYxMjQ2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
