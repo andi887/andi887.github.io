@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurnal Harian Anak - Online Real-time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .hidden {
+            display: none;
+        }
+        .online-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f4;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen py-8">
+    <!-- Online Status Indicator -->
+    <div id="onlineStatus" class="online-indicator">
+        <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2">
+            <div class="w-2 h-2 bg-white rounded-full pulse"></div>
+            <span>🌐 Online & Sinkron</span>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-3">
+            <div class="loading-spinner"></div>
+            <span>Menyinkronkan data...</span>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="container mx-auto px-4 max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">🔐 Login</h1>
+            <p class="text-white/80">Masuk ke Jurnal Harian Online</p>
+            <div class="mt-2 text-white/60 text-sm">
+                <span class="bg-white/20 px-2 py-1 rounded">Real-time Sync</span>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl card-shadow p-8">
+            <form id="loginForm">
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Username:</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="Masukkan username">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Password:</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="Masukkan password">
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 px-6 rounded-lg btn-hover transition-all duration-300 flex items-center justify-center">
+                    <span id="loginBtnText">🚀 Masuk</span>
+                    <div id="loginSpinner" class="hidden loading-spinner ml-2"></div>
+                </button>
+            </form>
+
+            <div id="loginError" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                Username atau password salah!
+            </div>
+
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p><strong>Demo Login:</strong></p>
+                <p>Admin: kelas4 / wali</p>
+                <p>Orang Tua: orangtua / lamanda</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden container mx-auto px-4 max-w-4xl">
+        <!-- Header with Logout -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-white mb-2">📖 Jurnal Harian Online</h1>
+                <p class="text-white/80">Data tersinkronisasi real-time di semua perangkat</p>
+                <p class="text-white/60 text-sm mt-1">Login sebagai: <span id="userRole" class="font-semibold"></span></p>
+                <p class="text-white/50 text-xs">Total Jurnal: <span id="totalJournals">0</span></p>
+            </div>
+            <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg btn-hover transition-all">
+                🚪 Logout
+            </button>
+        </div>
+
+        <!-- Admin Panel (Only for Admin) -->
+        <div id="adminPanel" class="hidden bg-white rounded-2xl card-shadow p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">👨‍💼 Panel Admin - Real-time</h2>
+            <div class="grid md:grid-cols-3 gap-4">
+                <button id="viewAllJournals" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg btn-hover transition-all">
+                    📊 Lihat Semua Jurnal
+                </button>
+                <button id="exportData" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg btn-hover transition-all">
+                    📥 Export Data
+                </button>
+                <button id="clearAllData" class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg btn-hover transition-all">
+                    🗑️ Hapus Semua
+                </button>
+            </div>
+        </div>
+
+        <!-- Real-time Stats -->
+        <div class="bg-white rounded-2xl card-shadow p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📈 Statistik Real-time</h2>
+            <div class="grid md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600" id="statsTotal">0</div>
+                    <div class="text-sm text-gray-600">Total Jurnal</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600" id="statsToday">0</div>
+                    <div class="text-sm text-gray-600">Hari Ini</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-600" id="statsThisMonth">0</div>
+                    <div class="text-sm text-gray-600">Bulan Ini</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-orange-600" id="statsLastUpdate">-</div>
+                    <div class="text-sm text-gray-600">Update Terakhir</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journal List (For viewing saved journals) -->
+        <div id="journalList" class="hidden bg-white rounded-2xl card-shadow p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">📋 Jurnal Real-time</h2>
+                <div class="flex space-x-2">
+                    <button id="refreshJournals" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg btn-hover transition-all text-sm">
+                        🔄 Refresh
+                    </button>
+                    <button id="backToForm" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg btn-hover transition-all">
+                        ← Kembali
+                    </button>
+                </div>
+            </div>
+            <div id="journalEntries" class="space-y-4">
+                <!-- Journal entries will be populated here -->
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div id="journalFormCard" class="bg-white rounded-2xl card-shadow p-8">
+            <form id="journalForm">
+                <!-- Info Dasar -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Nama Anak:</label>
+                        <input type="text" id="namaAnak" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="Masukkan nama anak">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Kelas:</label>
+                        <select id="kelas" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all">
+                            <option value="">Pilih Kelas</option>
+                            <option value="1">Kelas 1</option>
+                            <option value="2">Kelas 2</option>
+                            <option value="3">Kelas 3</option>
+                            <option value="4">Kelas 4</option>
+                            <option value="5">Kelas 5</option>
+                            <option value="6">Kelas 6</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tanggal -->
+                <div class="grid md:grid-cols-3 gap-4 mb-8">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Tanggal:</label>
+                        <input type="number" id="tanggal" min="1" max="31" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="DD">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Bulan:</label>
+                        <select id="bulan" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all">
+                            <option value="">Pilih Bulan</option>
+                            <option value="Januari">Januari</option>
+                            <option value="Februari">Februari</option>
+                            <option value="Maret">Maret</option>
+                            <option value="April">April</option>
+                            <option value="Mei">Mei</option>
+                            <option value="Juni">Juni</option>
+                            <option value="Juli">Juli</option>
+                            <option value="Agustus">Agustus</option>
+                            <option value="September">September</option>
+                            <option value="Oktober">Oktober</option>
+                            <option value="November">November</option>
+                            <option value="Desember">Desember</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Tahun:</label>
+                        <input type="number" id="tahun" min="2020" max="2030" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all" placeholder="YYYY">
+                    </div>
+                </div>
+
+                <!-- Kegiatan Harian -->
+                <div class="space-y-8">
+                    <!-- 1. Bangun Pagi -->
+                    <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border-l-4 border-yellow-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            🌅 1. Bangun Pagi
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <input type="time" id="bangunPagi" class="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:outline-none input-focus transition-all">
+                        </div>
+                    </div>
+
+                    <!-- 2. Beribadah -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-l-4 border-green-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            🕌 2. Beribadah
+                        </h3>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Subuh:</label>
+                                <input type="time" id="subuh" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none input-focus transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dzuhur:</label>
+                                <input type="time" id="dzuhur" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none input-focus transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ashar:</label>
+                                <input type="time" id="ashar" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none input-focus transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Maghrib:</label>
+                                <input type="time" id="maghrib" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none input-focus transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Isya:</label>
+                                <input type="time" id="isya" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none input-focus transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Berolahraga -->
+                    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-xl border-l-4 border-blue-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            🏃‍♂️ 3. Berolahraga
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Durasi (menit):</label>
+                            <input type="number" id="olahraga" min="0" max="300" class="w-full md:w-48 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none input-focus transition-all" placeholder="Contoh: 30">
+                        </div>
+                    </div>
+
+                    <!-- 4. Makan Sehat -->
+                    <div class="bg-gradient-to-r from-red-50 to-pink-50 p-6 rounded-xl border-l-4 border-red-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            🍎 4. Makan Sehat & Bergizi
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Menu makanan hari ini:</label>
+                            <textarea id="makanSehat" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:outline-none input-focus transition-all resize-none" placeholder="Contoh: Nasi, sayur bayam, ikan, buah apel..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 5. Gemar Belajar -->
+                    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border-l-4 border-purple-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            📚 5. Gemar Belajar
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Buku/pelajaran yang dipelajari:</label>
+                            <textarea id="belajar" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none input-focus transition-all resize-none" placeholder="Contoh: Matematika bab perkalian, membaca buku cerita..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 6. Bermasyarakat -->
+                    <div class="bg-gradient-to-r from-teal-50 to-green-50 p-6 rounded-xl border-l-4 border-teal-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            🤝 6. Bermasyarakat
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kegiatan gotong royong:</label>
+                            <textarea id="bermasyarakat" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none input-focus transition-all resize-none" placeholder="Contoh: Membersihkan halaman rumah, membantu tetangga..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 7. Tidur Cepat -->
+                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-l-4 border-indigo-400">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            😴 7. Tidur Cepat
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <input type="time" id="tidur" class="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none input-focus transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-10 flex justify-center space-x-4">
+                    <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-4 px-8 rounded-xl btn-hover transition-all duration-300 text-lg flex items-center">
+                        <span id="submitBtnText">💾 Simpan ke Cloud</span>
+                        <div id="submitSpinner" class="hidden loading-spinner ml-2"></div>
+                    </button>
+                    <button type="button" id="viewJournalsBtn" class="bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold py-4 px-8 rounded-xl btn-hover transition-all duration-300 text-lg">
+                        📋 Lihat Jurnal
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="hidden mt-6 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-xl text-center">
+            <h3 class="font-bold text-lg">✅ Jurnal Berhasil Disimpan ke Cloud!</h3>
+            <p>Data tersinkronisasi real-time di semua perangkat.</p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCYoUcSKj8aAZTaNgKtrn0bYHPmedVHAE4",
+            authDomain: "sdn139lamanda-a67a8.firebaseapp.com",
+            projectId: "sdn139lamanda-a67a8",
+            storageBucket: "sdn139lamanda-a67a8.firebasestorage.app",
+            messagingSenderId: "520862158793",
+            appId: "1:520862158793:web:8c527473b9accfc3a06218"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // User credentials
+        const users = {
+            'kelas4': { password: 'wali', role: 'admin', name: 'Wali Kelas' },
+            'orangtua': { password: 'lamanda', role: 'parent', name: 'Orang Tua' }
+        };
+
+        let currentUser = null;
+        let journalsListener = null;
+
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainApp');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const userRole = document.getElementById('userRole');
+        const adminPanel = document.getElementById('adminPanel');
+        const journalList = document.getElementById('journalList');
+        const journalFormCard = document.getElementById('journalFormCard');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Show/Hide Loading
+        function showLoading() {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
+
+        // Login functionality
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Show loading
+            document.getElementById('loginBtnText').textContent = 'Memverifikasi...';
+            document.getElementById('loginSpinner').classList.remove('hidden');
+            
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (users[username] && users[username].password === password) {
+                currentUser = users[username];
+                currentUser.username = username;
+                
+                // Hide login, show main app
+                loginScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                
+                // Update user role display
+                userRole.textContent = currentUser.name;
+                
+                // Show admin panel if admin
+                if (currentUser.role === 'admin') {
+                    adminPanel.classList.remove('hidden');
+                }
+                
+                // Initialize the app
+                await initializeApp();
+                
+                loginError.classList.add('hidden');
+            } else {
+                loginError.classList.remove('hidden');
+            }
+            
+            // Reset login button
+            document.getElementById('loginBtnText').textContent = '🚀 Masuk';
+            document.getElementById('loginSpinner').classList.add('hidden');
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            // Stop listening to real-time updates
+            if (journalsListener) {
+                journalsListener();
+                journalsListener = null;
+            }
+            
+            currentUser = null;
+            loginScreen.classList.remove('hidden');
+            mainApp.classList.add('hidden');
+            adminPanel.classList.add('hidden');
+            journalList.classList.add('hidden');
+            journalFormCard.classList.remove('hidden');
+            
+            // Reset login form
+            loginForm.reset();
+            loginError.classList.add('hidden');
+        });
+
+        // Initialize app after login
+        async function initializeApp() {
+            showLoading();
+            
+            // Set tanggal hari ini secara otomatis
+            const today = new Date();
+            document.getElementById('tanggal').value = today.getDate();
+            document.getElementById('tahun').value = today.getFullYear();
+            
+            // Set bulan hari ini
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            document.getElementById('bulan').value = months[today.getMonth()];
+            
+            // Start real-time listening
+            startRealtimeListener();
+            
+            hideLoading();
+        }
+
+        // Real-time listener for journals
+        function startRealtimeListener() {
+            journalsListener = db.collection('journals')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot((snapshot) => {
+                    updateStats(snapshot.docs);
+                    
+                    // Update total journals count
+                    document.getElementById('totalJournals').textContent = snapshot.docs.length;
+                    
+                    // If journal list is visible, update it
+                    if (!journalList.classList.contains('hidden')) {
+                        displayJournalsRealtime(snapshot.docs);
+                    }
+                }, (error) => {
+                    console.error('Error listening to journals:', error);
+                    updateOnlineStatus(false);
+                });
+        }
+
+        // Update statistics
+        function updateStats(docs) {
+            const today = new Date();
+            const todayStr = `${today.getDate()} ${getMonthName(today.getMonth())} ${today.getFullYear()}`;
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            let todayCount = 0;
+            let monthCount = 0;
+            let lastUpdate = null;
+            
+            docs.forEach(doc => {
+                const data = doc.data();
+                const docDate = `${data.tanggal} ${data.bulan} ${data.tahun}`;
+                
+                // Count today's journals
+                if (docDate === todayStr) {
+                    todayCount++;
+                }
+                
+                // Count this month's journals
+                const docMonth = getMonthIndex(data.bulan);
+                if (docMonth === currentMonth && parseInt(data.tahun) === currentYear) {
+                    monthCount++;
+                }
+                
+                // Get last update
+                if (data.timestamp && (!lastUpdate || data.timestamp.toDate() > lastUpdate)) {
+                    lastUpdate = data.timestamp.toDate();
+                }
+            });
+            
+            document.getElementById('statsTotal').textContent = docs.length;
+            document.getElementById('statsToday').textContent = todayCount;
+            document.getElementById('statsThisMonth').textContent = monthCount;
+            document.getElementById('statsLastUpdate').textContent = lastUpdate ? 
+                lastUpdate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+        }
+
+        // Helper functions
+        function getMonthName(index) {
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return months[index];
+        }
+
+        function getMonthIndex(monthName) {
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return months.indexOf(monthName);
+        }
+
+        // Update online status
+        function updateOnlineStatus(isOnline) {
+            const statusEl = document.getElementById('onlineStatus');
+            if (isOnline) {
+                statusEl.innerHTML = `
+                    <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-white rounded-full pulse"></div>
+                        <span>🌐 Online & Sinkron</span>
+                    </div>
+                `;
+            } else {
+                statusEl.innerHTML = `
+                    <div class="bg-red-500 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                        <span>⚠️ Offline</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Admin functions
+        document.getElementById('viewAllJournals').addEventListener('click', function() {
+            showAllJournals();
+        });
+
+        document.getElementById('exportData').addEventListener('click', async function() {
+            await exportJournalData();
+        });
+
+        document.getElementById('clearAllData').addEventListener('click', async function() {
+            if (currentUser.role !== 'admin') return;
+            
+            if (confirm('PERINGATAN: Ini akan menghapus SEMUA data jurnal secara permanen. Yakin?')) {
+                showLoading();
+                try {
+                    const snapshot = await db.collection('journals').get();
+                    const batch = db.batch();
+                    
+                    snapshot.docs.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    
+                    await batch.commit();
+                    alert('Semua data berhasil dihapus!');
+                } catch (error) {
+                    console.error('Error clearing data:', error);
+                    alert('Gagal menghapus data: ' + error.message);
+                }
+                hideLoading();
+            }
+        });
+
+        // View journals button
+        document.getElementById('viewJournalsBtn').addEventListener('click', function() {
+            showAllJournals();
+        });
+
+        // Refresh journals button
+        document.getElementById('refreshJournals').addEventListener('click', function() {
+            showAllJournals();
+        });
+
+        // Back to form button
+        document.getElementById('backToForm').addEventListener('click', function() {
+            journalList.classList.add('hidden');
+            journalFormCard.classList.remove('hidden');
+        });
+
+        // Show all journals
+        function showAllJournals() {
+            journalFormCard.classList.add('hidden');
+            journalList.classList.remove('hidden');
+            
+            // The real-time listener will automatically update the display
+        }
+
+        // Display journals in real-time
+        function displayJournalsRealtime(docs) {
+            const journalEntries = document.getElementById('journalEntries');
+            journalEntries.innerHTML = '';
+            
+            if (docs.length === 0) {
+                journalEntries.innerHTML = '<p class="text-gray-500 text-center py-8">Belum ada jurnal yang tersimpan.</p>';
+                return;
+            }
+
+            docs.forEach((doc) => {
+                const journal = doc.data();
+                const journalCard = document.createElement('div');
+                journalCard.className = 'bg-gray-50 p-4 rounded-lg border hover:shadow-md transition-all';
+                journalCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg">${journal.namaAnak} - Kelas ${journal.kelas}</h3>
+                        <div class="text-right">
+                            <span class="text-sm text-gray-500">${journal.tanggal} ${journal.bulan} ${journal.tahun}</span>
+                            <div class="text-xs text-gray-400">
+                                ${journal.timestamp ? journal.timestamp.toDate().toLocaleString('id-ID') : 'No timestamp'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-2 text-sm mb-3">
+                        <p><strong>Bangun Pagi:</strong> ${journal.bangunPagi || '-'}</p>
+                        <p><strong>Tidur:</strong> ${journal.tidur || '-'}</p>
+                        <p><strong>Olahraga:</strong> ${journal.olahraga || '0'} menit</p>
+                        <p><strong>Sholat Subuh:</strong> ${journal.sholat?.subuh || '-'}</p>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Diinput oleh: ${journal.submittedByRole === 'admin' ? '👨‍💼 Admin' : '👨‍👩‍👧‍👦 Orang Tua'} 
+                        (${journal.submittedBy})
+                    </div>
+                    ${currentUser.role === 'admin' ? `
+                        <button onclick="deleteJournalFromFirestore('${doc.id}')" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                            🗑️ Hapus
+                        </button>
+                    ` : ''}
+                `;
+                journalEntries.appendChild(journalCard);
+            });
+        }
+
+        // Delete journal from Firestore
+        async function deleteJournalFromFirestore(docId) {
+            if (currentUser.role !== 'admin') return;
+            
+            if (confirm('Yakin ingin menghapus jurnal ini?')) {
+                showLoading();
+                try {
+                    await db.collection('journals').doc(docId).delete();
+                    // Real-time listener will automatically update the display
+                } catch (error) {
+                    console.error('Error deleting journal:', error);
+                    alert('Gagal menghapus jurnal: ' + error.message);
+                }
+                hideLoading();
+            }
+        }
+
+        // Export data from Firestore
+        async function exportJournalData() {
+            if (currentUser.role !== 'admin') return;
+            
+            showLoading();
+            try {
+                const snapshot = await db.collection('journals').orderBy('timestamp', 'desc').get();
+                const journals = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    journals.push({
+                        id: doc.id,
+                        ...data,
+                        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : null
+                    });
+                });
+                
+                const dataStr = JSON.stringify(journals, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `jurnal_harian_export_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                alert(`Berhasil export ${journals.length} jurnal!`);
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                alert('Gagal export data: ' + error.message);
+            }
+            hideLoading();
+        }
+
+        // Handle form submission to Firestore
+        document.getElementById('journalForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validasi form
+            const requiredFields = ['namaAnak', 'kelas', 'tanggal', 'bulan', 'tahun'];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element.value.trim()) {
+                    element.style.borderColor = '#ef4444';
+                    isValid = false;
+                } else {
+                    element.style.borderColor = '#d1d5db';
+                }
+            });
+            
+            if (!isValid) {
+                alert('Mohon lengkapi data dasar (Nama, Kelas, dan Tanggal) terlebih dahulu!');
+                return;
+            }
+            
+            // Show loading on submit button
+            document.getElementById('submitBtnText').textContent = 'Menyimpan ke Cloud...';
+            document.getElementById('submitSpinner').classList.remove('hidden');
+            
+            // Collect form data
+            const formData = {
+                namaAnak: document.getElementById('namaAnak').value,
+                kelas: document.getElementById('kelas').value,
+                tanggal: parseInt(document.getElementById('tanggal').value),
+                bulan: document.getElementById('bulan').value,
+                tahun: parseInt(document.getElementById('tahun').value),
+                bangunPagi: document.getElementById('bangunPagi').value,
+                sholat: {
+                    subuh: document.getElementById('subuh').value,
+                    dzuhur: document.getElementById('dzuhur').value,
+                    ashar: document.getElementById('ashar').value,
+                    maghrib: document.getElementById('maghrib').value,
+                    isya: document.getElementById('isya').value
+                },
+                olahraga: parseInt(document.getElementById('olahraga').value) || 0,
+                makanSehat: document.getElementById('makanSehat').value,
+                belajar: document.getElementById('belajar').value,
+                bermasyarakat: document.getElementById('bermasyarakat').value,
+                tidur: document.getElementById('tidur').value,
+                submittedBy: currentUser.username,
+                submittedByRole: currentUser.role,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            try {
+                // Save to Firestore
+                await db.collection('journals').add(formData);
+                
+                // Show success message
+                document.getElementById('successMessage').classList.remove('hidden');
+                
+                // Scroll to success message
+                document.getElementById('successMessage').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+                
+                // Reset form after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('journalForm').reset();
+                    document.getElementById('successMessage').classList.add('hidden');
+                    
+                    // Re-initialize date
+                    initializeApp();
+                }, 3000);
+                
+                updateOnlineStatus(true);
+                
+            } catch (error) {
+                console.error('Error saving journal:', error);
+                alert('Gagal menyimpan jurnal: ' + error.message);
+                updateOnlineStatus(false);
+            }
+            
+            // Reset submit button
+            document.getElementById('submitBtnText').textContent = '💾 Simpan ke Cloud';
+            document.getElementById('submitSpinner').classList.add('hidden');
+        });
+
+        // Monitor online/offline status
+        window.addEventListener('online', () => updateOnlineStatus(true));
+        window.addEventListener('offline', () => updateOnlineStatus(false));
+
+        // Smooth animations for inputs
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            element.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Initialize online status
+        updateOnlineStatus(navigator.onLine);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'971a380234b2fd2c',t:'MTc1NTYxMjQ2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
