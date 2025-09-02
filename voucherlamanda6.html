@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -285,8 +284,8 @@
     const HARGA_GLOBAL_V5 = 4000;
 
     // STATE
-    let daftarAngkatan = []; // [1, 2, 3]
-    let arsipAngkatan = {}; // {1: true, 2: false}
+    let daftarAngkatan = [];
+    let arsipAngkatan = {};
     let angkatanAktif = null;
     let agents = ["radiah", "ibu rostini", "ibu mila", "mira", "mama arham", "jusra wira", "ibu putri", "bang adi", "ibu nayla", "ibu hasna", "ibu asnita", "ibu ayu", "ibu Rika", "pak risman", "afzal", "pak jusriadi", "ibu ira", "pak sulaiman", "ibu ardilla", "ibu ennar"];
     let transactions = [];
@@ -403,7 +402,7 @@
           stok: allData.stok_angkatan?.[angkatan],
           transactions: Object.fromEntries(
             Object.entries(allData.transactions || {})
-              .filter(([k, t]) => t.angkatan === angkatan)
+            .filter(([k, t]) => t.angkatan === angkatan)
           ),
           notes: allData.notes_angkatan?.[angkatan],
           tf: allData.tf_angkatan?.[angkatan]
@@ -621,11 +620,16 @@
         alert("Angkatan dikunci.");
         return;
       }
-      if (!confirm("Hapus transaksi ini?")) return;
-      db.ref('transactions').child(id).remove().then(() => {
-        alert("Dihapus.");
-        loadStok();
-      });
+      if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
+      db.ref('transactions').child(id).remove()
+        .then(() => {
+          alert("Transaksi berhasil dihapus.");
+          loadStok();
+        })
+        .catch(err => {
+          console.error("Gagal menghapus:", err);
+          alert("Gagal menghapus transaksi.");
+        });
     }
 
     // REKAP
@@ -708,22 +712,51 @@
 
     function showRekapTransaksi(trans) {
       const table = document.getElementById('rekapTransaksi');
-      let html = `<tr><th>Tanggal</th><th>Nama Agen</th><th>Jenis</th><th>V3</th><th>V5</th><th>Total Harga</th></tr>`;
+      const userRole = getUserRole();
+
+      let html = `<tr>
+        <th>Tanggal</th>
+        <th>Nama Agen</th>
+        <th>Jenis</th>
+        <th>V3</th>
+        <th>V5</th>
+        <th>Total Harga</th>`;
+      
+      if (userRole === 'andi' || userRole === 'risman' || userRole === 'anto') {
+        html += `<th>Aksi</th>`;
+      }
+      html += `</tr>`;
+
       trans.forEach(t => {
         const tgl = t.tglAmbil || t.tglSetor;
         const jenis = t.type === 'ambil' ? 'Pengambilan' : 'Setoran';
         const v3 = t.v3 || 0;
         const v5 = t.v5 || 0;
         const total = t.type === 'ambil' ? t.tagihan : t.nominalSetor;
+
+        let aksi = '';
+        if (t.type === 'ambil') {
+          if (userRole === 'andi') {
+            aksi = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>
+                    <button class="delete" onclick="deleteTransaction('${t.id}')">Hapus</button>`;
+          } else if (userRole === 'risman' || userRole === 'anto') {
+            aksi = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>`;
+          }
+        }
+
         html += `<tr>
           <td>${tgl}</td>
           <td>${t.agentName}</td>
           <td>${jenis}</td>
           <td>${v3}</td>
           <td>${v5}</td>
-          <td>${formatRupiah(total)}</td>
-        </tr>`;
+          <td>${formatRupiah(total)}</td>`;
+        if (aksi) {
+          html += `<td>${aksi}</td>`;
+        }
+        html += `</tr>`;
       });
+
       table.innerHTML = html;
     }
 
@@ -738,7 +771,14 @@
       });
 
       const userRole = getUserRole();
-      let html = `<tr><th>Nama Agen</th><th>Total Pengambilan</th><th>Total Setoran</th><th>Sisa Utang</th><th>Aksi</th></tr>`;
+      let html = `<tr>
+        <th>Nama Agen</th>
+        <th>Total Pengambilan</th>
+        <th>Total Setoran</th>
+        <th>Sisa Utang</th>
+        <th>Aksi</th>
+      </tr>`;
+
       for (let id in grouped) {
         const agen = grouped[id];
         const sisa = agen.ambil - agen.setor;
@@ -788,16 +828,25 @@
 
     function editTransaction(id) {
       const trans = transactions.find(t => t.id === id);
-      if (!trans) return;
-      document.getElementById('agentSelect').value = trans.agentId;
-      document.getElementById('tglAmbil').value = trans.tglAmbil;
-      document.getElementById('v3Qty').value = trans.v3;
-      document.getElementById('v5Qty').value = trans.v5;
-      updateTagihan();
-      document.getElementById('editTransId').value = id;
-      document.getElementById('submitBtnAmbil').classList.add('hidden');
-      document.getElementById('saveEditBtn').classList.remove('hidden');
-      document.getElementById('cancelEditBtn').classList.remove('hidden');
+      if (!trans) {
+        alert("Transaksi tidak ditemukan.");
+        return;
+      }
+
+      openTab(null, 'Transaksi');
+
+      setTimeout(() => {
+        document.getElementById('agentSelect').value = trans.agentId;
+        document.getElementById('tglAmbil').value = trans.tglAmbil;
+        document.getElementById('v3Qty').value = trans.v3 || 0;
+        document.getElementById('v5Qty').value = trans.v5 || 0;
+        updateTagihan();
+        document.getElementById('editTransId').value = id;
+
+        document.getElementById('submitBtnAmbil').classList.add('hidden');
+        document.getElementById('saveEditBtn').classList.remove('hidden');
+        document.getElementById('cancelEditBtn').classList.remove('hidden');
+      }, 100);
     }
 
     function saveEdit() {
@@ -962,7 +1011,7 @@
 
     function addAgent() {
       const newName = document.getElementById('newAgent').value.trim();
-      if (newName && !agents.includes(newName.toLowerCase())) {
+      if (newName && !agents.includes(newName)) {
         agents.push(newName);
         db.ref('agents').set(agents);
         loadAgents();
