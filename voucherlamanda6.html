@@ -30,7 +30,6 @@
     textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; min-height: 100px; }
     .note-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; background: #f9f9f9; }
     .note-footer { font-size: 12px; color: #777; text-align: right; margin-top: 5px; }
-
     /* Rekap Styling */
     .rekap-box {
       display: flex; justify-content: space-around; margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 8px; font-family: sans-serif; flex-wrap: wrap; gap: 10px;
@@ -38,17 +37,14 @@
     .rekap-item { text-align: center; flex: 1; min-width: 200px; }
     .rekap-item h4 { margin: 0 0 5px 0; color: #2c3e50; font-size: 14px; }
     .rekap-item p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #27ae60; }
-
     .filter-section { margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center; }
     .filter-section label { margin: 0 5px; }
-
     .siklus-rumus {
       margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #eef; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;
     }
     .siklus-item { text-align: center; flex: 1; min-width: 150px; }
     .siklus-item h4 { margin: 0; color: #2c3e50; }
     .siklus-item p { font-size: 16px; font-weight: bold; margin: 5px 0; color: #3498db; }
-
     .riwayat-periode {
       margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee;
     }
@@ -73,7 +69,6 @@
     <button onclick="login()">Masuk</button>
     <p id="loginError" style="color: red; display: none;">ID atau password salah!</p>
   </div>
-
   <div id="app" class="container hidden">
     <!-- Pemilih Angkatan -->
     <div style="text-align: center; margin-bottom: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px;">
@@ -81,20 +76,16 @@
       <select id="periodeSelect" onchange="switchPeriode()"></select>
       <button onclick="tambahAngkatan()" style="margin-left: 10px;">+ Tambah Angkatan</button>
     </div>
-
     <!-- Riwayat Angkatan Visual -->
     <div class="riwayat-periode">
       <h3>Riwayat Angkatan</h3>
       <div id="riwayatPeriodeList"></div>
     </div>
-
     <div style="text-align: right; font-size: 14px; color: #555; margin-bottom: 10px;">
       Masuk sebagai: <strong id="currentUserDisplay"></strong>
     </div>
-
     <h1>Pembukuan Agen Distribusi</h1>
     <button class="logout" onclick="logout()">Logout</button>
-
     <div class="tab">
       <button class="tablinks active" onclick="openTab(event, 'Transaksi')">Transaksi</button>
       <button class="tablinks" onclick="openTab(event, 'Rekap')">Rekap</button>
@@ -102,7 +93,6 @@
       <button class="tablinks" onclick="openTab(event, 'Agen')">Daftar Agen</button>
       <button class="tablinks" onclick="openTab(event, 'Catatan')">Catatan</button>
     </div>
-
     <!-- Tab Transaksi -->
     <div id="Transaksi" class="tabcontent" style="display: block;">
       <h2>Transaksi Pengambilan & Penyetoran</h2>
@@ -110,7 +100,6 @@
         <label>Pilih Agen:</label>
         <select id="agentSelect"></select>
       </div>
-
       <h3>Pengambilan Barang</h3>
       <div class="form-group">
         <label>Tanggal Pengambilan:</label>
@@ -132,7 +121,6 @@
       <button class="primary" onclick="submitPengambilan()" id="submitBtnAmbil">Catat Pengambilan</button>
       <button class="primary hidden" onclick="saveEdit()" id="saveEditBtn">Simpan Perubahan</button>
       <button class="hidden" onclick="cancelEdit()" id="cancelEditBtn">Batal</button>
-
       <h3>Penyetoran Uang</h3>
       <div class="form-group">
         <label>Tanggal Setoran:</label>
@@ -144,7 +132,6 @@
       </div>
       <button class="primary" onclick="submitPenyetoran()" id="submitBtnSetor">Catat Setoran</button>
     </div>
-
     <!-- Tab Rekap -->
     <div id="Rekap" class="tabcontent">
       <h2>Rekap Transaksi & Hutang</h2>
@@ -154,7 +141,6 @@
         <button onclick="filterRekap()">Terapkan Filter</button>
         <button onclick="resetFilter()">Reset</button>
       </div>
-
       <div class="rekap-box">
         <div class="rekap-item">
           <h4>Total Tagihan Belum Lunas</h4>
@@ -165,7 +151,6 @@
           <p id="total-setoran">Rp 0</p>
         </div>
       </div>
-
       <div class="siklus-rumus">
         <div class="siklus-item">
           <h4>Setoran ke Global</h4>
@@ -180,7 +165,6 @@
           <p id="sisa-global">Rp 0</p>
         </div>
       </div>
-
       <div class="form-group" style="text-align: center;">
         <h3>Tambah Catatan TF</h3>
         <input type="date" id="tfTgl" />
@@ -188,9 +172,7 @@
         <button onclick="addTf()">Tambah TF</button>
       </div>
       <div id="tfList"></div>
-
       <button onclick="loadRekap()">Muat Rekap</button>
-
       <!-- Rekap 1: Riwayat Transaksi Keseluruhan -->
       <h3>Riwayat Transaksi Semua Agen</h3>
       <table id="rekapTransaksi">
@@ -203,7 +185,6 @@
           <th>Total Harga</th>
         </tr>
       </table>
-
       <!-- Rekap 2: Rekap Per Agen -->
       <h3>Rekap Per Agen</h3>
       <table id="rekapPerAgen">
@@ -216,7 +197,6 @@
         </tr>
       </table>
     </div>
-
     <!-- Tab Stok -->
     <div id="Stok" class="tabcontent">
       <h2>Manajemen Stok</h2>
@@ -240,7 +220,6 @@
         <tr><td>Sisa Stok</td><td id="sisaV3">0</td><td id="sisaV5">0</td></tr>
       </table>
     </div>
-
     <!-- Tab Daftar Agen -->
     <div id="Agen" class="tabcontent">
       <h2>Daftar Agen</h2>
@@ -252,7 +231,6 @@
         <button class="primary" onclick="addAgent()">Tambah Agen</button>
       </div>
     </div>
-
     <!-- Tab Catatan -->
     <div id="Catatan" class="tabcontent">
       <h2>Catatan & Pengingat</h2>
@@ -263,7 +241,6 @@
       <div id="notesList"></div>
     </div>
   </div>
-
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -279,10 +256,8 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const HARGA_GLOBAL_V3 = 2400;
     const HARGA_GLOBAL_V5 = 4000;
-
     // STATE
     let daftarAngkatan = [];
     let arsipAngkatan = {};
@@ -290,12 +265,10 @@
     let agents = ["radiah", "ibu rostini", "ibu mila", "mira", "mama arham", "jusra wira", "ibu putri", "bang adi", "ibu nayla", "ibu hasna", "ibu asnita", "ibu ayu", "ibu Rika", "pak risman", "afzal", "pak jusriadi", "ibu ira", "pak sulaiman", "ibu ardilla", "ibu ennar"];
     let transactions = [];
     let stok = { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
-
     // Login
     function getUserRole() {
       return localStorage.getItem('username');
     }
-
     function login() {
       const user = document.getElementById('username').value;
       const pass = document.getElementById('password').value;
@@ -314,7 +287,6 @@
         document.getElementById('loginError').style.display = 'block';
       }
     }
-
     function logout() {
       if (confirm("Yakin ingin logout?")) {
         localStorage.removeItem('isLoggedIn');
@@ -325,7 +297,6 @@
         document.getElementById('password').value = '';
       }
     }
-
     window.onload = function () {
       if (localStorage.getItem('isLoggedIn') === 'true') {
         document.getElementById('loginScreen').classList.add('hidden');
@@ -336,18 +307,17 @@
         document.getElementById('loginScreen').classList.remove('hidden');
       }
     };
-
     // ===== MANAJEMEN ANGKATAN =====
     function loadAngkatan() {
-      db.ref('angkatan_list').once('value').then(snap => {
+      db.ref('html2/angkatan_list').once('value').then(snap => {
         const data = snap.val();
         if (data) {
           daftarAngkatan = Object.keys(data).map(Number).sort((a, b) => a - b);
         } else {
           daftarAngkatan = [1];
-          db.ref('angkatan_list').set({ 1: true });
+          db.ref('html2/angkatan_list').set({ 1: true });
         }
-        db.ref('arsip_angkatan').once('value').then(snap => {
+        db.ref('html2/arsip_angkatan').once('value').then(snap => {
           arsipAngkatan = snap.val() || {};
         }).finally(() => {
           angkatanAktif = daftarAngkatan[daftarAngkatan.length - 1];
@@ -357,7 +327,6 @@
         });
       });
     }
-
     function updateAngkatanSelect() {
       const select = document.getElementById('periodeSelect');
       select.innerHTML = '';
@@ -370,7 +339,6 @@
         select.appendChild(opt);
       });
     }
-
     function tambahAngkatan() {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan ini sudah dikunci. Tidak bisa buka angkatan baru.");
@@ -382,30 +350,29 @@
         return;
       }
       backupAngkatan(angkatanAktif).then(() => {
-        db.ref(`stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
+        db.ref(`html2/stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
           const stokLalu = snap.val() || { v3: 0, v5: 0 };
-          db.ref(`stok_angkatan/${nextNum}`).set(stokLalu).catch(console.error);
+          db.ref(`html2/stok_angkatan/${nextNum}`).set(stokLalu).catch(console.error);
         });
-        db.ref('angkatan_list').child(nextNum).set(true).then(() => {
+        db.ref('html2/angkatan_list').child(nextNum).set(true).then(() => {
           daftarAngkatan.push(nextNum);
           daftarAngkatan.sort((a, b) => a - b);
           loadAngkatan();
         });
       });
     }
-
     function backupAngkatan(angkatan) {
-      const backupRef = db.ref(`backup_angkatan/${angkatan}_${Date.now()}`);
+      const backupRef = db.ref(`html2/backup_angkatan/${angkatan}_${Date.now()}`);
       return db.ref().once('value').then(snap => {
         const allData = snap.val();
         const backupData = {
-          stok: allData.stok_angkatan?.[angkatan],
+          stok: allData['html2/stok_angkatan']?.[angkatan],
           transactions: Object.fromEntries(
-            Object.entries(allData.transactions || {})
+            Object.entries(allData['html2/transactions'] || {})
             .filter(([k, t]) => t.angkatan === angkatan)
           ),
-          notes: allData.notes_angkatan?.[angkatan],
-          tf: allData.tf_angkatan?.[angkatan]
+          notes: allData['html2/notes_angkatan']?.[angkatan],
+          tf: allData['html2/tf_angkatan']?.[angkatan]
         };
         return backupRef.set(backupData);
       }).then(() => {
@@ -415,10 +382,9 @@
         alert("Backup gagal, proses lanjut.");
       });
     }
-
     function arsipAngkatanHandler(angkatan) {
       if (!confirm(`Arsipkan Angkatan ${angkatan}? Data tidak bisa diubah.`)) return;
-      db.ref('arsip_angkatan').update({ [angkatan]: true }).then(() => {
+      db.ref('html2/arsip_angkatan').update({ [angkatan]: true }).then(() => {
         arsipAngkatan[angkatan] = true;
         alert("Angkatan berhasil diarsipkan.");
         updateRiwayatAngkatan();
@@ -428,7 +394,6 @@
         }
       });
     }
-
     function updateRiwayatAngkatan() {
       const container = document.getElementById('riwayatPeriodeList');
       container.innerHTML = '';
@@ -451,7 +416,6 @@
         container.appendChild(item);
       });
     }
-
     function switchPeriode() {
       const selected = parseInt(document.getElementById('periodeSelect').value);
       if (arsipAngkatan[selected]) {
@@ -462,7 +426,6 @@
       angkatanAktif = selected;
       loadAllDataPerAngkatan();
     }
-
     function loadAllDataPerAngkatan() {
       loadAgents();
       loadStok();
@@ -473,14 +436,13 @@
         loadRekap();
       }
     }
-
     // STOK
     function loadStok() {
-      db.ref(`stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
+      db.ref(`html2/stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
         const data = snap.val() || { v3: 0, v5: 0 };
         stok.v3 = data.v3 || 0;
         stok.v5 = data.v5 || 0;
-        return db.ref('transactions').once('value');
+        return db.ref('html2/transactions').once('value');
       }).then(snap => {
         const trans = snap.val();
         let keluarV3 = 0, keluarV5 = 0;
@@ -507,7 +469,6 @@
         }
       });
     }
-
     function saveStokAwal() {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan dikunci.");
@@ -519,16 +480,15 @@
         alert("Stok awal tidak boleh kurang dari barang keluar!");
         return;
       }
-      db.ref(`stok_angkatan/${angkatanAktif}`).update({ v3, v5 }).then(() => {
+      db.ref(`html2/stok_angkatan/${angkatanAktif}`).update({ v3, v5 }).then(() => {
         alert("Stok awal berhasil diperbarui!");
         exitEditStok();
         loadStok();
       });
     }
-
     // TRANSAKSI
     function loadTransactions() {
-      db.ref('transactions').on('value', (snap) => {
+      db.ref('html2/transactions').on('value', (snap) => {
         const data = snap.val();
         transactions = [];
         for (let key in data) {
@@ -543,7 +503,6 @@
         }
       });
     }
-
     function submitPengambilan() {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan dikunci.");
@@ -572,21 +531,20 @@
       };
       const id = document.getElementById('editTransId').value;
       if (id) {
-        db.ref('transactions').child(id).update(trans).then(() => {
+        db.ref('html2/transactions').child(id).update(trans).then(() => {
           alert("Transaksi diperbarui!");
           exitEditMode();
           loadTransactions();
           loadStok();
         });
       } else {
-        db.ref('transactions').push(trans).then(() => {
+        db.ref('html2/transactions').push(trans).then(() => {
           alert("Pengambilan dicatat!");
           resetForm();
           loadStok();
         });
       }
     }
-
     function submitPenyetoran() {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan dikunci.");
@@ -609,19 +567,18 @@
         timestamp: new Date().toISOString(),
         angkatan: angkatanAktif
       };
-      db.ref('transactions').push(trans).then(() => {
+      db.ref('html2/transactions').push(trans).then(() => {
         alert("Setoran dicatat!");
         resetForm();
       });
     }
-
     function deleteTransaction(id) {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan dikunci.");
         return;
       }
       if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
-      db.ref('transactions').child(id).remove()
+      db.ref('html2/transactions').child(id).remove()
         .then(() => {
           alert("Transaksi berhasil dihapus.");
           loadStok();
@@ -631,19 +588,16 @@
           alert("Gagal menghapus transaksi.");
         });
     }
-
     // REKAP
     function formatRupiah(angka) {
       return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
-
     function updateTagihan() {
       const v3 = parseInt(document.getElementById('v3Qty').value) || 0;
       const v5 = parseInt(document.getElementById('v5Qty').value) || 0;
       const total = (v3 * 2550) + (v5 * 4250);
       document.getElementById('tagihan').value = formatRupiah(total);
     }
-
     function openTab(evt, tabName) {
       const tabs = document.getElementsByClassName("tabcontent");
       for (let i = 0; i < tabs.length; i++) tabs[i].style.display = "none";
@@ -653,7 +607,6 @@
       if (evt) evt.currentTarget.className += " active";
       if (tabName === 'Rekap') loadRekap();
     }
-
     function loadRekap() {
       const filtered = transactions.filter(t => {
         const tgl = t.tglAmbil || t.tglSetor;
@@ -663,22 +616,18 @@
         if (tglAkhir && tgl > tglAkhir) return false;
         return true;
       });
-
       updateRekapBox(filtered);
       showRekapTransaksi(filtered);
       showRekapPerAgen(filtered);
     }
-
     function filterRekap() {
       loadRekap();
     }
-
     function resetFilter() {
       document.getElementById('filterTglAwal').value = '';
       document.getElementById('filterTglAkhir').value = '';
       loadRekap();
     }
-
     function updateRekapBox(trans) {
       let totalTagihan = 0;
       let totalSetoran = 0;
@@ -687,8 +636,7 @@
         if (t.type === 'setor') totalSetoran += t.nominalSetor;
       });
       const sisaHutang = totalTagihan - totalSetoran;
-
-      db.ref('tf_angkatan').once('value').then(snap => {
+      db.ref('html2/tf_angkatan').once('value').then(snap => {
         let totalTf = 0;
         const data = snap.val();
         if (data) {
@@ -701,7 +649,6 @@
         }
         const setoranKeGlobal = (stok.v3 * HARGA_GLOBAL_V3) + (stok.v5 * HARGA_GLOBAL_V5);
         const sisaSetoran = setoranKeGlobal - totalTf;
-
         document.getElementById('total-tagihan').textContent = formatRupiah(sisaHutang);
         document.getElementById('total-setoran').textContent = formatRupiah(totalSetoran);
         document.getElementById('total-global-tagihan').textContent = formatRupiah(setoranKeGlobal);
@@ -709,11 +656,9 @@
         document.getElementById('total-tf-disetor-display').textContent = formatRupiah(totalTf);
       });
     }
-
     function showRekapTransaksi(trans) {
       const table = document.getElementById('rekapTransaksi');
       const userRole = getUserRole();
-
       let html = `<tr>
         <th>Tanggal</th>
         <th>Nama Agen</th>
@@ -721,19 +666,16 @@
         <th>V3</th>
         <th>V5</th>
         <th>Total Harga</th>`;
-      
       if (userRole === 'andi' || userRole === 'risman' || userRole === 'anto') {
         html += `<th>Aksi</th>`;
       }
       html += `</tr>`;
-
       trans.forEach(t => {
         const tgl = t.tglAmbil || t.tglSetor;
         const jenis = t.type === 'ambil' ? 'Pengambilan' : 'Setoran';
         const v3 = t.v3 || 0;
         const v5 = t.v5 || 0;
         const total = t.type === 'ambil' ? t.tagihan : t.nominalSetor;
-
         let aksi = '';
         if (t.type === 'ambil') {
           if (userRole === 'andi') {
@@ -743,7 +685,6 @@
             aksi = `<button class="edit" onclick="editTransaction('${t.id}')">Edit</button>`;
           }
         }
-
         html += `<tr>
           <td>${tgl}</td>
           <td>${t.agentName}</td>
@@ -756,10 +697,8 @@
         }
         html += `</tr>`;
       });
-
       table.innerHTML = html;
     }
-
     function showRekapPerAgen(trans) {
       const grouped = {};
       trans.forEach(t => {
@@ -769,7 +708,6 @@
         if (t.type === 'ambil') grouped[t.agentId].ambil += t.tagihan;
         if (t.type === 'setor') grouped[t.agentId].setor += t.nominalSetor;
       });
-
       const userRole = getUserRole();
       let html = `<tr>
         <th>Nama Agen</th>
@@ -778,7 +716,6 @@
         <th>Sisa Utang</th>
         <th>Aksi</th>
       </tr>`;
-
       for (let id in grouped) {
         const agen = grouped[id];
         const sisa = agen.ambil - agen.setor;
@@ -799,13 +736,11 @@
       }
       document.getElementById('rekapPerAgen').innerHTML = html;
     }
-
     function filterByAgent(agentId) {
       const filtered = transactions.filter(t => t.agentId == agentId);
       showRekapTransaksi(filtered);
       showRekapPerAgen(filtered);
     }
-
     function editFirstPengambilan(agentId) {
       const transaksi = transactions
         .filter(t => t.type === 'ambil' && t.agentId == agentId)
@@ -816,7 +751,6 @@
       }
       editTransaction(transaksi[0].id);
     }
-
     function hapusPengambilanAgen(agentId) {
       if (!confirm("Hapus transaksi pengambilan terakhir dari agen ini?")) return;
       const transaksi = transactions
@@ -825,16 +759,13 @@
       if (transaksi.length === 0) return;
       deleteTransaction(transaksi[0].id);
     }
-
     function editTransaction(id) {
       const trans = transactions.find(t => t.id === id);
       if (!trans) {
         alert("Transaksi tidak ditemukan.");
         return;
       }
-
       openTab(null, 'Transaksi');
-
       setTimeout(() => {
         document.getElementById('agentSelect').value = trans.agentId;
         document.getElementById('tglAmbil').value = trans.tglAmbil;
@@ -842,23 +773,19 @@
         document.getElementById('v5Qty').value = trans.v5 || 0;
         updateTagihan();
         document.getElementById('editTransId').value = id;
-
         document.getElementById('submitBtnAmbil').classList.add('hidden');
         document.getElementById('saveEditBtn').classList.remove('hidden');
         document.getElementById('cancelEditBtn').classList.remove('hidden');
       }, 100);
     }
-
     function saveEdit() {
       submitPengambilan();
     }
-
     function cancelEdit() {
       if (confirm("Batalkan edit?")) {
         exitEditMode();
       }
     }
-
     function exitEditMode() {
       document.getElementById('editTransId').value = '';
       document.getElementById('submitBtnAmbil').classList.remove('hidden');
@@ -866,7 +793,6 @@
       document.getElementById('cancelEditBtn').classList.add('hidden');
       resetForm();
     }
-
     function resetForm() {
       document.getElementById('v3Qty').value = '0';
       document.getElementById('v5Qty').value = '0';
@@ -875,7 +801,6 @@
       document.getElementById('tglAmbil').value = '';
       document.getElementById('tglSetor').value = '';
     }
-
     // Stok Edit Mode
     let editStokMode = false;
     function enableEditStok() {
@@ -894,7 +819,6 @@
       document.getElementById('saveStokBtn').classList.remove('hidden');
       document.getElementById('cancelStokBtn').classList.remove('hidden');
     }
-
     function cancelEditStok() {
       if (confirm("Batalkan?")) {
         exitEditStok();
@@ -902,7 +826,6 @@
         document.getElementById('stokAwalV5').value = stok.v5;
       }
     }
-
     function exitEditStok() {
       editStokMode = false;
       document.getElementById('stokAwalV3').disabled = true;
@@ -911,10 +834,9 @@
       document.getElementById('saveStokBtn').classList.add('hidden');
       document.getElementById('cancelStokBtn').classList.add('hidden');
     }
-
     // Catatan & TF
     function loadNotes() {
-      db.ref('notes_angkatan').on('value', snap => {
+      db.ref('html2/notes_angkatan').on('value', snap => {
         const data = snap.val();
         let html = '';
         for (let key in data) {
@@ -927,7 +849,6 @@
         document.getElementById('notesList').innerHTML = html;
       });
     }
-
     function addNote() {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan dikunci.");
@@ -939,13 +860,12 @@
         return;
       }
       const note = { text, timestamp: new Date().toISOString(), angkatan: angkatanAktif };
-      db.ref('notes_angkatan').push(note).then(() => {
+      db.ref('html2/notes_angkatan').push(note).then(() => {
         document.getElementById('newNote').value = '';
       });
     }
-
     function loadTfNotes() {
-      db.ref('tf_angkatan').on('value', snap => {
+      db.ref('html2/tf_angkatan').on('value', snap => {
         const data = snap.val();
         let html = '<h3>Riwayat TF</h3><table><tr><th>Tanggal</th><th>Nominal</th><th>Aksi</th></tr>';
         let totalTf = 0;
@@ -966,7 +886,6 @@
         document.getElementById('total-tf-disetor-display').textContent = formatRupiah(totalTf);
       });
     }
-
     function addTf() {
       if (arsipAngkatan[angkatanAktif]) {
         alert("Angkatan dikunci.");
@@ -979,18 +898,16 @@
         return;
       }
       const data = { tgl, nominal, angkatan: angkatanAktif };
-      db.ref('tf_angkatan').push(data).then(() => {
+      db.ref('html2/tf_angkatan').push(data).then(() => {
         document.getElementById('tfTgl').value = '';
         document.getElementById('tfNominal').value = '';
       });
     }
-
     function deleteTf(key) {
       if (confirm("Hapus catatan TF ini?")) {
-        db.ref('tf_angkatan').child(key).remove();
+        db.ref('html2/tf_angkatan').child(key).remove();
       }
     }
-
     // Daftar Agen
     function loadAgents() {
       const select = document.getElementById('agentSelect');
@@ -1008,12 +925,11 @@
         table.appendChild(row);
       });
     }
-
     function addAgent() {
       const newName = document.getElementById('newAgent').value.trim();
       if (newName && !agents.includes(newName)) {
         agents.push(newName);
-        db.ref('agents').set(agents);
+        db.ref('html2/agents').set(agents);
         loadAgents();
         document.getElementById('newAgent').value = '';
       }
