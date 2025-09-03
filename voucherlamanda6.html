@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -265,6 +266,7 @@
     let agents = ["radiah", "ibu rostini", "ibu mila", "mira", "mama arham", "jusra wira", "ibu putri", "bang adi", "ibu nayla", "ibu hasna", "ibu asnita", "ibu ayu", "ibu Rika", "pak risman", "afzal", "pak jusriadi", "ibu ira", "pak sulaiman", "ibu ardilla", "ibu ennar"];
     let transactions = [];
     let stok = { v3: 0, v5: 0, keluarV3: 0, keluarV5: 0 };
+
     // Login
     function getUserRole() {
       return localStorage.getItem('username');
@@ -307,6 +309,7 @@
         document.getElementById('loginScreen').classList.remove('hidden');
       }
     };
+
     // ===== MANAJEMEN ANGKATAN =====
     function loadAngkatan() {
       db.ref('html2/angkatan_list').once('value').then(snap => {
@@ -349,17 +352,25 @@
         alert(`Angkatan ${nextNum} sudah ada.`);
         return;
       }
-      backupAngkatan(angkatanAktif).then(() => {
-        db.ref(`html2/stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
-          const stokLalu = snap.val() || { v3: 0, v5: 0 };
-          db.ref(`html2/stok_angkatan/${nextNum}`).set(stokLalu).catch(console.error);
+
+      if (confirm(`Setelah Angkatan ${angkatanAktif} dikunci, data tidak bisa diubah. Lanjutkan?`)) {
+        backupAngkatan(angkatanAktif).then(() => {
+          db.ref('html2/arsip_angkatan').update({ [angkatanAktif]: true }).then(() => {
+            arsipAngkatan[angkatanAktif] = true;
+          });
+
+          db.ref(`html2/stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
+            const stokLalu = snap.val() || { v3: 0, v5: 0 };
+            db.ref(`html2/stok_angkatan/${nextNum}`).set(stokLalu).catch(console.error);
+          });
+
+          db.ref('html2/angkatan_list').child(nextNum).set(true).then(() => {
+            daftarAngkatan.push(nextNum);
+            daftarAngkatan.sort((a, b) => a - b);
+            loadAngkatan();
+          });
         });
-        db.ref('html2/angkatan_list').child(nextNum).set(true).then(() => {
-          daftarAngkatan.push(nextNum);
-          daftarAngkatan.sort((a, b) => a - b);
-          loadAngkatan();
-        });
-      });
+      }
     }
     function backupAngkatan(angkatan) {
       const backupRef = db.ref(`html2/backup_angkatan/${angkatan}_${Date.now()}`);
@@ -394,6 +405,28 @@
         }
       });
     }
+    function bukaKunciAngkatan(angkatan) {
+      if (getUserRole() !== 'andi') {
+        alert("Hanya Andi yang bisa membuka kunci angkatan.");
+        return;
+      }
+      if (!confirm(`Yakin ingin membuka kunci Angkatan ${angkatan}? Anda bisa mengedit data kembali.`)) {
+        return;
+      }
+      db.ref('html2/arsip_angkatan').child(angkatan).remove().then(() => {
+        arsipAngkatan[angkatan] = false;
+        delete arsipAngkatan[angkatan];
+        alert(`Angkatan ${angkatan} berhasil dibuka kembali.`);
+        updateRiwayatAngkatan();
+        updateAngkatanSelect();
+        if (angkatan === angkatanAktif) {
+          loadAllDataPerAngkatan();
+        }
+      }).catch(err => {
+        console.error("Gagal membuka kunci:", err);
+        alert("Gagal membuka kunci.");
+      });
+    }
     function updateRiwayatAngkatan() {
       const container = document.getElementById('riwayatPeriodeList');
       container.innerHTML = '';
@@ -403,8 +436,12 @@
         const statusClass = arsipAngkatan[num] ? 'status-arsip' : (num === angkatanAktif ? 'status-aktif' : 'status-buka');
         const statusText = arsipAngkatan[num] ? 'Dikunci' : (num === angkatanAktif ? 'Aktif' : 'Terbuka');
         let arsipBtn = '';
-        if (getUserRole() === 'andi' && !arsipAngkatan[num] && num !== angkatanAktif) {
-          arsipBtn = `<button class="edit" onclick="arsipAngkatanHandler(${num})">Arsipkan</button>`;
+        if (getUserRole() === 'andi') {
+          if (arsipAngkatan[num]) {
+            arsipBtn = `<button class="edit" onclick="bukaKunciAngkatan(${num})">Buka Kunci</button>`;
+          } else if (!arsipAngkatan[num] && num !== angkatanAktif) {
+            arsipBtn = `<button class="edit" onclick="arsipAngkatanHandler(${num})">Arsipkan</button>`;
+          }
         }
         item.innerHTML = `
           <span class="periode-bulan">Angkatan ${num}</span>
@@ -436,6 +473,7 @@
         loadRekap();
       }
     }
+
     // STOK
     function loadStok() {
       db.ref(`html2/stok_angkatan/${angkatanAktif}`).once('value').then(snap => {
@@ -486,22 +524,25 @@
         loadStok();
       });
     }
+
     // TRANSAKSI
     function loadTransactions() {
-      db.ref('html2/transactions').on('value', (snap) => {
-        const data = snap.val();
-        transactions = [];
-        for (let key in data) {
-          const t = data[key];
-          if (t.angkatan === angkatanAktif) {
+      db.ref('html2/transactions').off('value');
+      db.ref('html2/transactions')
+        .orderByChild('angkatan')
+        .equalTo(angkatanAktif)
+        .on('value', (snap) => {
+          const data = snap.val();
+          transactions = [];
+          for (let key in data) {
+            const t = data[key];
             transactions.push({ id: key, ...t });
           }
-        }
-        transactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        if (document.getElementById('Rekap').style.display === 'block') {
-          loadRekap();
-        }
-      });
+          transactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          if (document.getElementById('Rekap').style.display === 'block') {
+            loadRekap();
+          }
+        });
     }
     function submitPengambilan() {
       if (arsipAngkatan[angkatanAktif]) {
@@ -588,6 +629,7 @@
           alert("Gagal menghapus transaksi.");
         });
     }
+
     // REKAP
     function formatRupiah(angka) {
       return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -801,6 +843,7 @@
       document.getElementById('tglAmbil').value = '';
       document.getElementById('tglSetor').value = '';
     }
+
     // Stok Edit Mode
     let editStokMode = false;
     function enableEditStok() {
@@ -834,20 +877,23 @@
       document.getElementById('saveStokBtn').classList.add('hidden');
       document.getElementById('cancelStokBtn').classList.add('hidden');
     }
+
     // Catatan & TF
     function loadNotes() {
-      db.ref('html2/notes_angkatan').on('value', snap => {
-        const data = snap.val();
-        let html = '';
-        for (let key in data) {
-          const note = data[key];
-          if (note.angkatan === angkatanAktif) {
+      db.ref('html2/notes_angkatan').off('value');
+      db.ref('html2/notes_angkatan')
+        .orderByChild('angkatan')
+        .equalTo(angkatanAktif)
+        .on('value', snap => {
+          const data = snap.val();
+          let html = '';
+          for (let key in data) {
+            const note = data[key];
             const date = new Date(note.timestamp).toLocaleString('id-ID');
             html += `<div class="note-item"><p>${note.text}</p><div class="note-footer">Dibuat: ${date}</div></div>`;
           }
-        }
-        document.getElementById('notesList').innerHTML = html;
-      });
+          document.getElementById('notesList').innerHTML = html;
+        });
     }
     function addNote() {
       if (arsipAngkatan[angkatanAktif]) {
@@ -865,13 +911,16 @@
       });
     }
     function loadTfNotes() {
-      db.ref('html2/tf_angkatan').on('value', snap => {
-        const data = snap.val();
-        let html = '<h3>Riwayat TF</h3><table><tr><th>Tanggal</th><th>Nominal</th><th>Aksi</th></tr>';
-        let totalTf = 0;
-        for (let key in data) {
-          const tf = data[key];
-          if (tf.angkatan === angkatanAktif) {
+      db.ref('html2/tf_angkatan').off('value');
+      db.ref('html2/tf_angkatan')
+        .orderByChild('angkatan')
+        .equalTo(angkatanAktif)
+        .on('value', snap => {
+          const data = snap.val();
+          let html = '<h3>Riwayat TF</h3><table><tr><th>Tanggal</th><th>Nominal</th><th>Aksi</th></tr>';
+          let totalTf = 0;
+          for (let key in data) {
+            const tf = data[key];
             totalTf += tf.nominal;
             const date = new Date(tf.tgl).toLocaleDateString('id-ID');
             html += `<tr>
@@ -880,11 +929,10 @@
               <td><button class="delete" onclick="deleteTf('${key}')">Hapus</button></td>
             </tr>`;
           }
-        }
-        html += '</table>';
-        document.getElementById('tfList').innerHTML = html;
-        document.getElementById('total-tf-disetor-display').textContent = formatRupiah(totalTf);
-      });
+          html += '</table>';
+          document.getElementById('tfList').innerHTML = html;
+          document.getElementById('total-tf-disetor-display').textContent = formatRupiah(totalTf);
+        });
     }
     function addTf() {
       if (arsipAngkatan[angkatanAktif]) {
@@ -908,6 +956,7 @@
         db.ref('html2/tf_angkatan').child(key).remove();
       }
     }
+
     // Daftar Agen
     function loadAgents() {
       const select = document.getElementById('agentSelect');
