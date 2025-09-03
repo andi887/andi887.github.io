@@ -246,7 +246,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const HARGA_GLOBAL_V3 = 2400;
     const HARGA_GLOBAL_V5 = 4000;
 
@@ -347,7 +346,7 @@
         const newName = document.getElementById('newAgent').value.trim();
         if (newName && !agents.includes(newName.toLowerCase())) {
             agents.push(newName);
-            db.ref('agents').set(agents);
+            db.ref('html1/agents').set(agents);  // ✅ DIUBAH: Simpan ke html1/agents
             loadAgents();
             document.getElementById('newAgent').value = '';
         }
@@ -386,14 +385,14 @@
 
         if (editMode) {
             const id = document.getElementById('editTransId').value;
-            db.ref('transactions').child(id).update(trans).then(() => {
+            db.ref('html1/transactions').child(id).update(trans).then(() => {  // ✅ DIUBAH
                 alert("Transaksi berhasil diperbarui!");
                 exitEditMode();
                 loadTransactions();
                 loadStok();
             });
         } else {
-            db.ref('transactions').push(trans).then(() => {
+            db.ref('html1/transactions').push(trans).then(() => {  // ✅ DIUBAH
                 alert("Pengambilan berhasil dicatat!");
                 resetForm();
                 loadStok();
@@ -419,13 +418,13 @@
 
         if (editMode) {
             const id = document.getElementById('editTransId').value;
-            db.ref('transactions').child(id).update(trans).then(() => {
+            db.ref('html1/transactions').child(id).update(trans).then(() => {  // ✅ DIUBAH
                 alert("Setoran berhasil diperbarui!");
                 exitEditMode();
                 loadTransactions();
             });
         } else {
-            db.ref('transactions').push(trans).then(() => {
+            db.ref('html1/transactions').push(trans).then(() => {  // ✅ DIUBAH
                 alert("Penyetoran berhasil dicatat!");
                 resetForm();
             }).catch(err => {
@@ -455,7 +454,7 @@
 
     function deleteTransaction(id) {
         if (confirm("Hapus transaksi ini?")) {
-            db.ref('transactions').child(id).remove().then(() => {
+            db.ref('html1/transactions').child(id).remove().then(() => {  // ✅ DIUBAH
                 alert("Transaksi dihapus.");
                 loadTransactions();
                 loadStok();
@@ -534,7 +533,7 @@
         if (confirm(`Simpan stok awal baru?\nV3: ${v3}, V5: ${v5}`)) {
             stok.v3 = v3;
             stok.v5 = v5;
-            db.ref('stok').update({ v3, v5 }).then(() => {
+            db.ref('html1/stok').update({ v3, v5 }).then(() => {  // ✅ DIUBAH
                 alert("Stok awal berhasil diperbarui!");
                 exitEditStok();
                 loadStok();
@@ -563,12 +562,12 @@
     }
 
     function loadStok() {
-        db.ref('stok').once('value').then(snap => {
+        db.ref('html1/stok').once('value').then(snap => {  // ✅ DIUBAH
             const data = snap.val() || { v3: 0, v5: 0 };
             stok.v3 = data.v3 || 0;
             stok.v5 = data.v5 || 0;
 
-            return db.ref('transactions').once('value');
+            return db.ref('html1/transactions').once('value');  // ✅ DIUBAH: ambil transaksi dari html1
         }).then(snap => {
             const trans = snap.val();
             let keluarV3 = 0;
@@ -604,7 +603,7 @@
     }
 
     function loadTransactions() {
-        db.ref('transactions').on('value', (snap) => {
+        db.ref('html1/transactions').on('value', (snap) => {  // ✅ DIUBAH
             const data = snap.val();
             transactions = [];
             for (let key in data) {
@@ -672,7 +671,7 @@
             }
         }
 
-        db.ref('tf').once('value').then(snap => {
+        db.ref('html1/tf').once('value').then(snap => {  // ✅ DIUBAH
             const tfData = snap.val();
             if (tfData) {
                 for (let key in tfData) {
@@ -699,7 +698,7 @@
             return;
         }
 
-        db.ref('tf').push({
+        db.ref('html1/tf').push({  // ✅ DIUBAH
             tgl,
             nominal
         }).then(() => {
@@ -716,7 +715,7 @@
     
     function loadTfNotes() {
         const tfList = document.getElementById('tfList');
-        db.ref('tf').on('value', snap => {
+        db.ref('html1/tf').on('value', snap => {  // ✅ DIUBAH
             const data = snap.val();
             tfList.innerHTML = '<h3>Riwayat TF</h3>';
             if (data) {
@@ -742,7 +741,7 @@
             return;
         }
         if (confirm("Hapus catatan TF ini?")) {
-            db.ref('tf').child(id).remove().then(() => {
+            db.ref('html1/tf').child(id).remove().then(() => {  // ✅ DIUBAH
                 alert("Catatan TF dihapus.");
                 loadTfNotes();
                 updateRekapBox(transactions);
@@ -802,7 +801,7 @@
 
     // === CATATAN: Edit & Hapus Berdasarkan ID ===
     function loadNotes() {
-        db.ref('notes').on('value', (snap) => {
+        db.ref('html1/notes').on('value', (snap) => {  // ✅ DIUBAH
             const data = snap.val();
             const list = document.getElementById('notesList');
             list.innerHTML = '';
@@ -814,15 +813,12 @@
                     const div = document.createElement('div');
                     div.className = 'note-item';
 
-                    // Tombol Edit selalu muncul untuk andi, risman, anto
                     const editButton = `<button class="edit" onclick="editNote('${n.id}', '${escapeHtml(n.text)}')">Edit</button>`;
 
-                    // Hapus hanya untuk andi
                     const deleteButton = currentUser === 'andi'
                         ? `<button class="delete" onclick="deleteNote('${n.id}')">Hapus</button>`
                         : '';
 
-                    // Gabungkan tombol
                     const actions = `${editButton} ${deleteButton}`;
 
                     div.innerHTML = `
@@ -838,7 +834,6 @@
         });
     }
 
-    // Fungsi bantu untuk amankan HTML
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -847,12 +842,12 @@
 
     function editNote(id, currentText) {
         const newText = prompt("Edit catatan:", currentText);
-        if (newText === null) return; // Batal
+        if (newText === null) return;
         if (newText.trim() === '') {
             alert("Catatan tidak boleh kosong!");
             return;
         }
-        db.ref('notes').child(id).update({ text: newText, timestamp: new Date().toISOString() })
+        db.ref('html1/notes').child(id).update({ text: newText, timestamp: new Date().toISOString() })  // ✅ DIUBAH
             .then(() => alert("Catatan berhasil diperbarui!"))
             .catch(err => console.error("Gagal edit catatan:", err));
     }
@@ -860,13 +855,13 @@
     function addNote() {
         const text = document.getElementById('newNote').value.trim();
         if (!text) { alert("Tulis dulu catatannya!"); return; }
-        db.ref('notes').push({ text, timestamp: new Date().toISOString() });
+        db.ref('html1/notes').push({ text, timestamp: new Date().toISOString() });  // ✅ DIUBAH
         document.getElementById('newNote').value = '';
     }
 
     function deleteNote(id) {
         if (confirm("Hapus catatan ini?")) {
-            db.ref('notes').child(id).remove()
+            db.ref('html1/notes').child(id).remove()  // ✅ DIUBAH
                 .then(() => alert("Catatan dihapus."))
                 .catch(err => console.error("Gagal hapus catatan:", err));
         }
