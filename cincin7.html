@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Toto App - Realtime</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background: #f5f5f5;
+      padding: 10px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1a73e8;
+      flex: 1;
+      text-align: center;
+    }
+    .btn {
+      padding: 8px 12px;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-back { background: #5f6368; }
+    .btn-save { background: #0f9d58; }
+    .btn-edit { background: #4285f4; }
+    .btn-add { background: #fb8c00; }
+    .btn-primary {
+      padding: 14px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    .btn:disabled {
+      background: #dadce0;
+      cursor: not-allowed;
+    }
+    .hidden { display: none; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th { background: #e8f0fe; }
+    input[type="date"], input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .result-input {
+      max-width: 100px;
+      margin: 0 auto;
+    }
+    .status-cell {
+      cursor: pointer;
+      font-size: 20px;
+      user-select: none;
+    }
+    .ket-cell {
+      color: #1a73e8;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background: white;
+      margin: 10% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Beranda -->
+    <div id="home" class="screen">
+      <h2 style="text-align:center; margin-bottom:20px; color:#1a73e8;">Beranda</h2>
+      <button class="btn-primary" onclick="showScreen('feature1')">1. Daftar Tluser</button>
+      <button class="btn-primary" onclick="showScreen('feature2')">2. Riwayat</button>
+      <button class="btn-primary" onclick="showScreen('feature3')">3. Prediksi</button>
+      <button class="btn-primary" disabled>4. Serba Serbi</button>
+    </div>
+
+    <!-- Fitur 1 -->
+    <div id="feature1" class="screen hidden">
+      <h2 style="text-align:center; margin-bottom:20px; color:#1a73e8;">Daftar Tluser</h2>
+      <button class="btn-primary" onclick="openMarketInput('hk')">A. RES HK</button>
+      <button class="btn-primary" onclick="openMarketInput('sidney')">B. RES SIDNEY</button>
+      <button class="btn-primary" onclick="openMarketInput('china')">C. RES CHINA</button>
+      <button class="btn-primary" onclick="openMarketInput('thai')">D. RES THAIWAN</button>
+      <button class="btn-primary" onclick="openMarketInput('singapore')">E. RES SINGAPORE</button>
+      <button class="btn-primary" onclick="showScreen('home')">Kembali</button>
+    </div>
+
+    <!-- Form Input Pasar -->
+    <div id="market-form" class="screen hidden">
+      <div class="page-header">
+        <button class="btn btn-back" onclick="showScreen('feature1')">Kembali</button>
+        <div class="page-title" id="market-title">RES HK</div>
+        <button class="btn btn-save" onclick="saveMarketInput()">Simpan</button>
+      </div>
+      <table>
+        <thead><tr><th>Tgl/Bulan</th><th>Hari</th><th>RES</th></tr></thead>
+        <tbody id="input-body"></tbody>
+      </table>
+      <button class="btn-primary" style="background:#fb8c00;" onclick="addEmptyRow()">+ Tambah Baris</button>
+    </div>
+
+    <!-- Fitur 2 -->
+    <div id="feature2" class="screen hidden">
+      <h2 style="text-align:center; margin-bottom:20px; color:#1a73e8;">Riwayat</h2>
+      <button class="btn-primary" onclick="openMarketHistory('hk')">A. RES HK</button>
+      <button class="btn-primary" onclick="openMarketHistory('sidney')">B. RES SIDNEY</button>
+      <button class="btn-primary" onclick="openMarketHistory('china')">C. RES CHINA</button>
+      <button class="btn-primary" onclick="openMarketHistory('thai')">D. RES THAIWAN</button>
+      <button class="btn-primary" onclick="openMarketHistory('singapore')">E. RES SINGAPORE</button>
+      <button class="btn-primary" onclick="showScreen('home')">Kembali</button>
+    </div>
+
+    <!-- Riwayat Detail -->
+    <div id="history-detail" class="screen hidden">
+      <div class="page-header">
+        <button class="btn btn-back" onclick="showScreen('feature2')">Kembali</button>
+        <div class="page-title" id="history-title">Riwayat HK</div>
+        <button class="btn btn-save" onclick="saveHistoryStatus()">Simpan</button>
+      </div>
+      <table>
+        <thead><tr><th>RES</th><th>Data</th><th>Benar/Salah</th><th>Ket</th></tr></thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Fitur 3: Prediksi -->
+    <div id="feature3" class="screen hidden">
+      <div class="page-header">
+        <button class="btn btn-back" onclick="showScreen('home')">Kembali</button>
+        <div class="page-title">Prediksi</div>
+        <button class="btn btn-save" onclick="savePrediction()">Simpan</button>
+      </div>
+      <textarea id="predictionArea" rows="10" placeholder="Tulis prediksi Anda..." style="text-align:left; padding:12px;"></textarea>
+      <button class="btn-primary" style="background:#4285f4; margin-top:10px;" onclick="editPrediction()">Edit</button>
+    </div>
+  </div>
+
+  <!-- Modal Popup -->
+  <div id="ketModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal()">&times;</span>
+      <h3>Keterangan</h3>
+      <p id="modalText"></p>
+    </div>
+  </div>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+
+  <script>
+    // === FIREBASE CONFIG ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyCr5B0P0X_eqMNYbZonu40NXRxqCmx4t_o",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.firebaseio.com",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "917602556667",
+      appId: "1:917602556667:web:cc087826739cf2d2cd2e5e",
+      measurementId: "G-9DMC1YKZP7"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const analytics = firebase.analytics();
+    const database = firebase.database();
+
+    // === CONSTANTS ===
+    const FIXED_DATA = ['B','C','D','G','H','I','J','K','R','Y','A','M','N'];
+    const MARKET_NAMES = {
+      hk: 'HK',
+      sidney: 'SIDNEY',
+      china: 'CHINA',
+      thai: 'THAIWAN',
+      singapore: 'SINGAPORE'
+    };
+    const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+    let currentMarket = 'hk';
+    let localData = {
+      hk: [], sidney: [], china: [], thai: [], singapore: [],
+      hk_status: {}, sidney_status: {}, china_status: {}, thai_status: {}, singapore_status: {},
+      prediction: ''
+    };
+
+    // === REALTIME SYNC ===
+    function setupRealtimeSync() {
+      const markets = ['hk', 'sidney', 'china', 'thai', 'singapore'];
+      
+      markets.forEach(market => {
+        // Sync data RES
+        firebase.database().ref(`data/${market}`).on('value', (snapshot) => {
+          localData[market] = snapshot.val() || [];
+          if (document.getElementById('history-detail').classList.contains('hidden') === false && currentMarket === market) {
+            renderHistoryTable();
+          }
+        });
+
+        // Sync status
+        firebase.database().ref(`status/${market}`).on('value', (snapshot) => {
+          localData[`${market}_status`] = snapshot.val() || {};
+          if (document.getElementById('history-detail').classList.contains('hidden') === false && currentMarket === market) {
+            renderHistoryTable();
+          }
+        });
+      });
+
+      // Sync prediction
+      firebase.database().ref('prediction').on('value', (snapshot) => {
+        localData.prediction = snapshot.val() || '';
+        if (document.getElementById('feature3').classList.contains('hidden') === false) {
+          document.getElementById('predictionArea').value = localData.prediction;
+        }
+      });
+    }
+
+    // === UI FUNCTIONS (same as before, but use localData) ===
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'feature3') {
+        document.getElementById('predictionArea').value = localData.prediction;
+        document.getElementById('predictionArea').readOnly = true;
+      }
+    }
+
+    function openMarketInput(market) {
+      currentMarket = market;
+      document.getElementById('market-title').textContent = `RES ${MARKET_NAMES[market]}`;
+      renderInputTable();
+      showScreen('market-form');
+    }
+
+    function renderInputTable() {
+      const tbody = document.getElementById('input-body');
+      tbody.innerHTML = '';
+
+      const data = localData[currentMarket] || [];
+      data.forEach(item => {
+        const d = new Date(item.date);
+        const dayName = DAYS[d.getDay()];
+        const row = createRow(item.date, dayName, item.res);
+        tbody.appendChild(row);
+      });
+
+      const emptyRow = createRow('', '', '');
+      tbody.insertBefore(emptyRow, tbody.firstChild);
+    }
+
+    function createRow(dateIso, dayName, res) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="date" value="${dateIso}" class="date-input"></td>
+        <td>${dayName || ''}</td>
+        <td><input type="text" class="result-input" maxlength="4" value="${res}" placeholder="####"></td>
+      `;
+      tr.querySelector('.date-input').addEventListener('change', function() {
+        const d = new Date(this.value);
+        const dayCell = this.closest('tr').cells[1];
+        dayCell.textContent = this.value ? DAYS[d.getDay()] : '';
+      });
+      tr.querySelector('.result-input').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 4);
+      });
+      return tr;
+    }
+
+    function addEmptyRow() {
+      const tbody = document.getElementById('input-body');
+      const emptyRow = createRow('', '', '');
+      tbody.insertBefore(emptyRow, tbody.firstChild);
+    }
+
+    function saveMarketInput() {
+      const rows = document.querySelectorAll('#input-body tr');
+      const newData = [];
+      rows.forEach(row => {
+        const dateInput = row.querySelector('.date-input');
+        const resInput = row.querySelector('.result-input');
+        const date = dateInput?.value;
+        const res = resInput?.value.trim();
+        if (date && res && /^\d{4}$/.test(res)) {
+          newData.push({ date, res });
+        }
+      });
+      const unique = [];
+      const seen = new Set();
+      for (const item of newData) {
+        if (!seen.has(item.date)) {
+          seen.add(item.date);
+          unique.push(item);
+        }
+      }
+      firebase.database().ref(`data/${currentMarket}`).set(unique);
+      alert(`Data ${MARKET_NAMES[currentMarket]} disimpan ke Firebase!`);
+    }
+
+    function openMarketHistory(market) {
+      currentMarket = market;
+      document.getElementById('history-title').textContent = `Riwayat ${MARKET_NAMES[market]}`;
+      renderHistoryTable();
+      showScreen('history-detail');
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-body');
+      tbody.innerHTML = '';
+
+      const resList = localData[currentMarket] || [];
+      if (resList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4">Belum ada data.</td></tr>`;
+        return;
+      }
+
+      const status = localData[`${currentMarket}_status`] || {};
+
+      resList.forEach(item => {
+        FIXED_DATA.forEach((letter, idx) => {
+          const key = `${item.date}_${letter}`;
+          const currentStatus = status[key] || '?';
+          const displayStatus = currentStatus === 'benar' ? '✅' : (currentStatus === 'salah' ? '❌' : '?');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${idx === 0 ? item.res : ''}</td>
+            <td>${letter}</td>
+            <td class="status-cell" data-key="${key}">${displayStatus}</td>
+            <td>${idx === 0 ? '<span class="ket-cell" data-res="' + item.res + '" data-date="' + item.date + '">ket</span>' : ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+
+      document.querySelectorAll('.status-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+          let txt = this.textContent;
+          if (txt === '?') txt = '✅';
+          else if (txt === '✅') txt = '❌';
+          else txt = '?';
+          this.textContent = txt;
+
+          // Simpan ke Firebase
+          const key = this.dataset.key;
+          const val = txt === '✅' ? 'benar' : (txt === '❌' ? 'salah' : '?');
+          firebase.database().ref(`status/${currentMarket}/${key}`).set(val);
+        });
+      });
+
+      document.querySelectorAll('.ket-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+          const res = this.dataset.res;
+          const date = this.dataset.date;
+          const entries = FIXED_DATA.map(letter => {
+            const key = `${date}_${letter}`;
+            const s = status[key] || '?';
+            const sym = s === 'benar' ? '✅' : (s === 'salah' ? '❌' : '?');
+            return `${letter} ${sym}`;
+          });
+          document.getElementById('modalText').textContent = `${res} ${entries.join(', ')}`;
+          document.getElementById('ketModal').style.display = 'block';
+        });
+      });
+    }
+
+    function saveHistoryStatus() {
+      // Tidak perlu manual karena sudah real-time
+      alert('Status disimpan otomatis ke Firebase!');
+    }
+
+    function editPrediction() {
+      document.getElementById('predictionArea').readOnly = false;
+      document.getElementById('predictionArea').focus();
+    }
+
+    function savePrediction() {
+      const text = document.getElementById('predictionArea').value;
+      firebase.database().ref('prediction').set(text);
+      document.getElementById('predictionArea').readOnly = true;
+      alert('Prediksi disimpan ke Firebase!');
+    }
+
+    function closeModal() {
+      document.getElementById('ketModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('ketModal');
+      if (event.target === modal) closeModal();
+    };
+
+    // Jalankan saat halaman dimuat
+    window.addEventListener('load', () => {
+      setupRealtimeSync();
+    });
+  </script>
+</body>
+</html>
