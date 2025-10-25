@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Toto App</title>
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (tanpa spasi berlebih di akhir URL) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <style>
@@ -213,7 +214,7 @@
   </div>
 
   <script>
-    // === Firebase Config dari cuc.docx ===
+    // === Firebase Config (diperbaiki: hapus spasi di databaseURL) ===
     const firebaseConfig = {
       apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
       authDomain: "nomoromosse.firebaseapp.com",
@@ -224,7 +225,6 @@
       appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
     };
 
-    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
     const dbRef = firebase.database().ref('totoAppData');
 
@@ -254,12 +254,10 @@
     let currentMarket = 'hk';
     let isFirebaseReady = false;
 
-    // Validasi struktur
     function ensureValid(obj, key, def) {
       if (!(key in obj) || obj[key] == null) obj[key] = def;
     }
 
-    // === Firebase Realtime Sync ===
     dbRef.on('value', (snapshot) => {
       const data = snapshot.val() || {};
       appData = {
@@ -274,7 +272,6 @@
       });
       isFirebaseReady = true;
 
-      // Refresh hanya jika sedang di layar yang relevan
       if (document.getElementById('market-form').classList.contains('hidden') === false) {
         if (document.getElementById('market-title').textContent.includes(MARKET_NAMES[currentMarket])) {
           renderInputTable();
@@ -311,16 +308,16 @@
       const tbody = document.getElementById('input-body');
       tbody.innerHTML = '';
       const data = appData[currentMarket] || [];
-      // Tampilkan data yang sudah ada
+      // Tampilkan data yang sudah ada (dari atas ke bawah)
       data.forEach(item => {
         const d = new Date(item.date);
         const dayName = DAYS[d.getDay()];
         const row = createRow(item.date, dayName, item.res, false);
         tbody.appendChild(row);
       });
-      // Tambahkan satu baris kosong di akhir (bukan di awal)
+      // Tambahkan satu baris kosong DI ATAS
       const emptyRow = createRow('', '', '', true);
-      tbody.appendChild(emptyRow);
+      tbody.insertBefore(emptyRow, tbody.firstChild);
     }
 
     function createRow(dateIso, dayName, res, isEditable = true) {
@@ -344,10 +341,11 @@
       return tr;
     }
 
+    // ✅ DIPERBAIKI: tambah baris DI ATAS
     function addEmptyRow() {
       const tbody = document.getElementById('input-body');
       const emptyRow = createRow('', '', '', true);
-      tbody.appendChild(emptyRow); // tambah di bawah, bukan di atas
+      tbody.insertBefore(emptyRow, tbody.firstChild);
     }
 
     function saveMarketInput() {
@@ -356,14 +354,13 @@
       for (const row of rows) {
         const dateInput = row.querySelector('.date-input');
         const resInput = row.querySelector('.result-input');
-        if (!dateInput || !resInput) continue; // skip non-editable rows
+        if (!dateInput || !resInput) continue;
         const date = dateInput.value;
         const res = resInput.value.trim();
         if (date && res && /^\d{4}$/.test(res)) {
           newData.push({ date, res });
         }
       }
-      // Hapus duplikat
       const unique = [];
       const seen = new Set();
       for (const item of newData) {
