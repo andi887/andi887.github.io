@@ -1,219 +1,89 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Toto App</title>
-  <!-- Firebase SDK (tanpa spasi berlebih di akhir URL) -->
+  <title>Toto App - Mul1 Final</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-    body {
-      background: #f5f5f5;
-      padding: 10px;
-      color: #333;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .page-title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #1a73e8;
-      flex: 1;
-      text-align: center;
-    }
-    .btn {
-      padding: 8px 12px;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #f5f5f5; padding: 8px; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .screen { animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .btn { padding: 12px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin: 6px 0; font-size: 16px; }
+    .btn-home { background: #1a73e8; }
     .btn-back { background: #5f6368; }
     .btn-save { background: #0f9d58; }
-    .btn-edit { background: #4285f4; }
+    .btn-delete { background: #ea4335; }
     .btn-add { background: #fb8c00; }
-    .btn-primary {
-      padding: 14px;
-      background: #1a73e8;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      text-align: center;
-      font-weight: bold;
-      width: 100%;
-      margin-bottom: 8px;
-    }
-    .btn:disabled {
-      background: #dadce0;
-      cursor: not-allowed;
-    }
     .hidden { display: none; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-      font-size: 14px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
     th { background: #e8f0fe; }
-    input[type="date"], input[type="text"], textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      text-align: center;
-    }
-    .result-input {
-      max-width: 100px;
-      margin: 0 auto;
-    }
-    .status-cell {
-      cursor: pointer;
-      font-size: 20px;
-      user-select: none;
-    }
-    .ket-cell {
-      color: #1a73e8;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 100;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-    }
-    .modal-content {
-      background: white;
-      margin: 10% auto;
-      padding: 20px;
-      width: 90%;
-      max-width: 500px;
-      border-radius: 10px;
-      position: relative;
-    }
-    .close-modal {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 24px;
-      cursor: pointer;
-      color: #999;
-    }
+    input[type="date"], input[type="text"] { width: 100%; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px; }
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+    .modal-content { background: white; margin: 15% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 10px; position: relative; }
+    .close { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #999; }
+    h3, h4 { text-align: center; margin: 12px 0; color: #1a73e8; }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Beranda -->
     <div id="home" class="screen">
-      <h2 style="text-align:center; margin-bottom:20px; color:#1a73e8;">Beranda</h2>
-      <button class="btn-primary" onclick="showScreen('feature1')">1. Daftar Tluser</button>
-      <button class="btn-primary" onclick="showScreen('feature2')">2. Riwayat</button>
-      <button class="btn-primary" onclick="showScreen('feature3')">3. Prediksi</button>
-      <button class="btn-primary" disabled>4. Serba Serbi</button>
+      <h3>Beranda</h3>
+      <button class="btn btn-home" onclick="openFeature('sd')">1. SD</button>
+      <button class="btn btn-home" onclick="openFeature('cn')">2. CN</button>
+      <button class="btn btn-home" onclick="openFeature('singa')">3. Singa</button>
+      <button class="btn btn-home" onclick="openFeature('thaiw')">4. Thaiw</button>
+      <button class="btn btn-home" onclick="openFeature('hk')">5. HK</button>
     </div>
 
-    <!-- Fitur 1 -->
-    <div id="feature1" class="screen hidden">
-      <h2 style="text-align:center; margin-bottom:20px; color:#1a73e8;">Daftar Tluser</h2>
-      <button class="btn-primary" onclick="openMarketInput('hk')">A. RES HK</button>
-      <button class="btn-primary" onclick="openMarketInput('sidney')">B. RES SIDNEY</button>
-      <button class="btn-primary" onclick="openMarketInput('china')">C. RES CHINA</button>
-      <button class="btn-primary" onclick="openMarketInput('thai')">D. RES THAIWAN</button>
-      <button class="btn-primary" onclick="openMarketInput('singapore')">E. RES SINGAPORE</button>
-      <button class="btn-primary" onclick="showScreen('home')">Kembali</button>
-    </div>
+    <!-- Halaman Fitur -->
+    <div id="feature" class="screen hidden">
+      <button class="btn btn-back" onclick="showScreen('home')">Kembali</button>
+      <h3 id="feature-title">SD</h3>
 
-    <!-- Form Input Pasar -->
-    <div id="market-form" class="screen hidden">
-      <div class="page-header">
-        <button class="btn btn-back" onclick="showScreen('feature1')">Kembali</button>
-        <div class="page-title" id="market-title">RES HK</div>
-        <button class="btn btn-save" onclick="saveMarketInput()">Simpan</button>
-      </div>
-      <button class="btn-primary" style="background:#fb8c00;" onclick="addEmptyRow()">+ Tambah Baris</button>
-      <table>
-        <thead><tr><th>Tgl/Bulan</th><th>Hari</th><th>RES</th></tr></thead>
-        <tbody id="input-body"></tbody>
+      <!-- Tabel 1 -->
+      <h4>Tabel 1: Input RES</h4>
+      <button class="btn btn-add" onclick="addRowTable1()">+ Tambah Baris</button>
+      <table id="table1">
+        <thead><tr><th>Waktu</th><th>Hari</th><th>RES</th><th>Aksi</th></tr></thead>
+        <tbody id="tbody1"></tbody>
       </table>
-    </div>
 
-    <!-- Fitur 2 -->
-    <div id="feature2" class="screen hidden">
-      <h2 style="text-align:center; margin-bottom:20px; color:#1a73e8;">Riwayat</h2>
-      <button class="btn-primary" onclick="openMarketHistory('hk')">A. RES HK</button>
-      <button class="btn-primary" onclick="openMarketHistory('sidney')">B. RES SIDNEY</button>
-      <button class="btn-primary" onclick="openMarketHistory('china')">C. RES CHINA</button>
-      <button class="btn-primary" onclick="openMarketHistory('thai')">D. RES THAIWAN</button>
-      <button class="btn-primary" onclick="openMarketHistory('singapore')">E. RES SINGAPORE</button>
-      <button class="btn-primary" onclick="showScreen('home')">Kembali</button>
-    </div>
-
-    <!-- Riwayat Detail -->
-    <div id="history-detail" class="screen hidden">
-      <div class="page-header">
-        <button class="btn btn-back" onclick="showScreen('feature2')">Kembali</button>
-        <div class="page-title" id="history-title">Riwayat HK</div>
-        <button class="btn btn-save" onclick="saveHistoryStatus()">Simpan</button>
-      </div>
-      <table>
-        <thead><tr><th>RES</th><th>Data</th><th>Benar/Salah</th><th>Ket</th></tr></thead>
-        <tbody id="history-body"></tbody>
+      <!-- Tabel 2 -->
+      <h4>Tabel 2: Acuan</h4>
+      <table id="table2">
+        <thead><tr><th>Acuan</th><th>Jari</th><th>RES</th><th>Ket</th></tr></thead>
+        <tbody id="tbody2"></tbody>
       </table>
-    </div>
 
-    <!-- Fitur 3: Prediksi -->
-    <div id="feature3" class="screen hidden">
-      <div class="page-header">
-        <button class="btn btn-back" onclick="showScreen('home')">Kembali</button>
-        <div class="page-title">Prediksi</div>
-        <button class="btn btn-save" onclick="savePrediction()" id="savePredBtn">Simpan</button>
-      </div>
-      <textarea id="predictionArea" rows="10" placeholder="Tulis prediksi Anda di sini (teks & angka)..." style="text-align:left; padding:12px;"></textarea>
-      <button class="btn-primary" style="background:#4285f4; margin-top:10px;" onclick="editPrediction()">Edit</button>
+      <!-- Tabel 3 -->
+      <h4>Tabel 3: Lampiran</h4>
+      <table id="table3">
+        <thead><tr><th>RES</th><th>Lampiran</th></tr></thead>
+        <tbody id="tbody3"></tbody>
+      </table>
+
+      <button class="btn btn-save" onclick="saveAll()">Simpan</button>
     </div>
   </div>
 
   <!-- Modal Popup -->
-  <div id="ketModal" class="modal">
+  <div id="popupModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="closeModal()">&times;</span>
-      <h3>Keterangan</h3>
-      <p id="modalText"></p>
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h4 id="popupTitle">Keterangan</h4>
+      <p id="popupContent"></p>
     </div>
   </div>
 
   <script>
-    // === Firebase Config (diperbaiki: hapus spasi di databaseURL) ===
+    // === Firebase Config (sesuai permintaan) ===
     const firebaseConfig = {
       apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
       authDomain: "nomoromosse.firebaseapp.com",
@@ -225,249 +95,230 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const dbRef = firebase.database().ref('totoAppData');
+    const dbRef = firebase.database().ref('mul1Data');
 
-    const FIXED_DATA = ['B','C','D','G','H','I','J','K','R','Y','A','M','N'];
-    const MARKET_NAMES = {
-      hk: 'HK',
-      sidney: 'SIDNEY',
-      china: 'CHINA',
-      thai: 'THAIWAN',
-      singapore: 'SINGAPORE'
-    };
+    const MARKETS = { sd: 'SD', cn: 'CN', singa: 'Singa', thaiw: 'Thaiw', hk: 'HK' };
+    const FIXED_REF = ['B','C','D','G','H','I','J','K','R','Y','A','M','N'];
     const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
+    let currentMarket = 'sd';
     let appData = {
-      hk: [],
-      sidney: [],
-      china: [],
-      thai: [],
-      singapore: [],
-      hk_status: {},
-      sidney_status: {},
-      china_status: {},
-      thai_status: {},
-      singapore_status: {},
-      prediction: ''
+      sd: { entries: [] },
+      cn: { entries: [] },
+      singa: { entries: [] },
+      thaiw: { entries: [] },
+      hk: { entries: [] }
     };
-    let currentMarket = 'hk';
-    let isFirebaseReady = false;
 
-    function ensureValid(obj, key, def) {
-      if (!(key in obj) || obj[key] == null) obj[key] = def;
-    }
-
+    // Muat data dari Firebase
     dbRef.on('value', (snapshot) => {
-      const data = snapshot.val() || {};
-      appData = {
-        hk: [], sidney: [], china: [], thai: [], singapore: [],
-        hk_status: {}, sidney_status: {}, china_status: {}, thai_status: {}, singapore_status: {},
-        prediction: ''
-      };
-      Object.assign(appData, data);
-      ['hk', 'sidney', 'china', 'thai', 'singapore'].forEach(m => {
-        ensureValid(appData, m, []);
-        ensureValid(appData, `${m}_status`, {});
-      });
-      isFirebaseReady = true;
-
-      // Render ulang form input jika sedang aktif
-      if (!document.getElementById('market-form').classList.contains('hidden')) {
-        if (document.getElementById('market-title').textContent.includes(MARKET_NAMES[currentMarket])) {
-          renderInputTable();
+      const data = snapshot.val();
+      if (data) {
+        Object.keys(appData).forEach(key => {
+          if (data[key] && data[key].entries) {
+            appData[key].entries = data[key].entries;
+          }
+        });
+        if (!document.getElementById('feature').classList.contains('hidden')) {
+          renderAllTables();
         }
-      }
-
-      // ✅ PERBAIKAN: Render ulang riwayat jika sedang aktif
-      if (!document.getElementById('history-detail').classList.contains('hidden')) {
-        if (document.getElementById('history-title').textContent.includes(MARKET_NAMES[currentMarket])) {
-          renderHistoryTable();
-        }
-      }
-
-      // Prediksi
-      if (!document.getElementById('feature3').classList.contains('hidden')) {
-        document.getElementById('predictionArea').value = appData.prediction;
       }
     });
-
-    function saveToFirebase() {
-      dbRef.set(appData);
-    }
 
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
-      if (id === 'feature3') {
-        document.getElementById('predictionArea').value = appData.prediction;
-        document.getElementById('predictionArea').readOnly = true;
-      }
     }
 
-    // === FITUR 1 ===
-    function openMarketInput(market) {
+    function openFeature(market) {
       currentMarket = market;
-      document.getElementById('market-title').textContent = `RES ${MARKET_NAMES[market]}`;
-      renderInputTable();
-      showScreen('market-form');
+      document.getElementById('feature-title').textContent = MARKETS[market];
+      renderAllTables();
+      showScreen('feature');
     }
 
-    function renderInputTable() {
-      if (!isFirebaseReady) return;
-      const tbody = document.getElementById('input-body');
-      tbody.innerHTML = '';
-      const data = appData[currentMarket] || [];
-      data.forEach(item => {
-        const d = new Date(item.date);
-        const dayName = DAYS[d.getDay()];
-        const row = createRow(item.date, dayName, item.res, false);
-        tbody.appendChild(row);
-      });
-      const emptyRow = createRow('', '', '', true);
-      tbody.insertBefore(emptyRow, tbody.firstChild);
-    }
-
-    function createRow(dateIso, dayName, res, isEditable = true) {
+    // === Tabel 1 ===
+    function addRowTable1(date = '', res = '') {
+      const d = date ? new Date(date) : null;
+      const day = date && !isNaN(d) ? DAYS[d.getDay()] : '';
       const tr = document.createElement('tr');
-      const dateInput = isEditable ? `<input type="date" value="${dateIso}" class="date-input">` : dateIso;
-      const resInput = isEditable ? `<input type="text" class="result-input" maxlength="4" value="${res}" placeholder="####">` : res;
-      const dayDisplay = dayName || '';
-      tr.innerHTML = `<td>${dateInput}</td><td>${dayDisplay}</td><td>${resInput}</td>`;
-      
-      if (isEditable) {
-        const dateEl = tr.querySelector('.date-input');
-        const resEl = tr.querySelector('.result-input');
-        dateEl.addEventListener('change', function() {
-          const d = new Date(this.value);
-          tr.cells[1].textContent = this.value ? DAYS[d.getDay()] : '';
-        });
-        resEl.addEventListener('input', function() {
-          this.value = this.value.replace(/\D/g, '').slice(0, 4);
-        });
-      }
-      return tr;
+      tr.innerHTML = `
+        <td><input type="date" value="${date}" class="date-input"></td>
+        <td class="day-cell">${day}</td>
+        <td><input type="text" value="${res}" class="res-input" maxlength="4" placeholder="1234"></td>
+        <td><button class="btn btn-delete" onclick="removeRow(this)">Hapus</button></td>
+      `;
+      const dateInput = tr.querySelector('.date-input');
+      const dayCell = tr.querySelector('.day-cell');
+      dateInput.addEventListener('change', () => {
+        const d = new Date(dateInput.value);
+        dayCell.textContent = dateInput.value && !isNaN(d) ? DAYS[d.getDay()] : '';
+      });
+      const resInput = tr.querySelector('.res-input');
+      resInput.addEventListener('input', () => {
+        resInput.value = resInput.value.replace(/\D/g, '').slice(0, 4);
+      });
+      document.getElementById('tbody1').appendChild(tr);
     }
 
-    function addEmptyRow() {
-      const tbody = document.getElementById('input-body');
-      const emptyRow = createRow('', '', '', true);
-      tbody.insertBefore(emptyRow, tbody.firstChild);
+    function removeRow(btn) {
+      btn.closest('tr').remove();
     }
 
-    function saveMarketInput() {
-      const rows = Array.from(document.querySelectorAll('#input-body tr'));
-      const newData = [];
-      for (const row of rows) {
+    // === Render Semua Tabel ===
+    function renderAllTables() {
+      const tbody1 = document.getElementById('tbody1');
+      tbody1.innerHTML = '';
+      appData[currentMarket].entries.forEach(entry => {
+        addRowTable1(entry.date, entry.res);
+      });
+      renderTable2And3();
+    }
+
+    function renderTable2And3() {
+      const tbody2 = document.getElementById('tbody2');
+      const tbody3 = document.getElementById('tbody3');
+      tbody2.innerHTML = '';
+      tbody3.innerHTML = '';
+
+      const entries = appData[currentMarket].entries;
+      if (entries.length === 0) return;
+
+      entries.forEach((entry, idx) => {
+        // Tabel 2: 13 baris per entry
+        FIXED_REF.forEach((ref, i) => {
+          // Ambil nilai jari dari data asli (untuk disimpan), tapi tampilkan kosong saat pertama kali render setelah simpan
+          const jariValue = entry.jari?.[ref] || '';
+          const tr2 = document.createElement('tr');
+          tr2.innerHTML = `
+            <td>${ref}</td>
+            <td><input type="text" class="jari-input" value="${jariValue}" maxlength="2" placeholder="x/0-99"></td>
+            <td>${entry.res || ''}</td>
+            <td>${i === 0 ? '<span class="ket-link" data-idx="' + idx + '">ket</span>' : ''}</td>
+          `;
+          tbody2.appendChild(tr2);
+
+          const jariInput = tr2.querySelector('.jari-input');
+          jariInput.dataset.ref = ref;
+          jariInput.dataset.idx = idx;
+          jariInput.addEventListener('input', function() {
+            let val = this.value.trim().toLowerCase();
+            if (val === 'x' || val === '') {
+              this.value = val;
+            } else {
+              val = val.replace(/\D/g, '').slice(0, 2);
+              this.value = val;
+            }
+          });
+        });
+
+        // Tabel 3
+        const tr3 = document.createElement('tr');
+        tr3.innerHTML = `
+          <td>${entry.res || ''}</td>
+          <td><span class="lampiran-link" data-idx="${idx}">Lampiran 1</span></td>
+        `;
+        tbody3.appendChild(tr3);
+      });
+
+      // Pasang event popup
+      document.querySelectorAll('.ket-link, .lampiran-link').forEach(el => {
+        el.addEventListener('click', function() {
+          const idx = this.dataset.idx;
+          const entry = appData[currentMarket].entries[idx];
+          if (!entry) return;
+
+          const items = FIXED_REF.map(ref => {
+            const j = entry.jari?.[ref] || '?';
+            return `${ref} ${j}`;
+          });
+          document.getElementById('popupTitle').textContent = `${entry.res} - Detail`;
+          document.getElementById('popupContent').textContent = `${entry.res} ${items.join(', ')}`;
+          document.getElementById('popupModal').style.display = 'block';
+        });
+      });
+    }
+
+    // === Simpan Semua (dengan reset UI jari setelah simpan) ===
+    function saveAll() {
+      const rows = document.querySelectorAll('#tbody1 tr');
+      const newEntries = [];
+
+      rows.forEach(row => {
         const dateInput = row.querySelector('.date-input');
-        const resInput = row.querySelector('.result-input');
-        if (!dateInput || !resInput) continue;
+        const resInput = row.querySelector('.res-input');
+        if (!dateInput || !resInput) return;
         const date = dateInput.value;
         const res = resInput.value.trim();
         if (date && res && /^\d{4}$/.test(res)) {
-          newData.push({ date, res });
-        }
-      }
-      const unique = [];
-      const seen = new Set();
-      for (const item of newData) {
-        if (!seen.has(item.date)) {
-          seen.add(item.date);
-          unique.push(item);
-        }
-      }
-      appData[currentMarket] = unique;
-      saveToFirebase();
-      alert(`Data ${MARKET_NAMES[currentMarket]} berhasil disimpan!`);
-    }
-
-    // === FITUR 2 ===
-    function openMarketHistory(market) {
-      currentMarket = market;
-      document.getElementById('history-title').textContent = `Riwayat ${MARKET_NAMES[market]}`;
-      renderHistoryTable();
-      showScreen('history-detail');
-    }
-
-    function renderHistoryTable() {
-      const tbody = document.getElementById('history-body');
-      tbody.innerHTML = '';
-      const resList = appData[currentMarket] || [];
-      if (resList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4">Belum ada data.</td></tr>`;
-        return;
-      }
-      const status = appData[`${currentMarket}_status`] || {};
-      const sorted = [...resList].sort((a, b) => new Date(b.date) - new Date(a.date));
-      sorted.forEach(item => {
-        FIXED_DATA.forEach((letter, idx) => {
-          const key = `${item.date}_${letter}`;
-          const s = status[key] || '?';
-          const sym = s === 'benar' ? '✅' : (s === 'salah' ? '❌' : '?');
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${idx === 0 ? item.res : ''}</td>
-            <td>${letter}</td>
-            <td class="status-cell" data-key="${key}">${sym}</td>
-            <td>${idx === 0 ? '<span class="ket-cell" data-res="' + item.res + '" data-date="' + item.date + '">ket</span>' : ''}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-
-      document.querySelectorAll('.status-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
-          const txt = this.textContent.trim();
-          this.textContent = txt === '?' ? '✅' : (txt === '✅' ? '❌' : '?');
-        });
-      });
-
-      document.querySelectorAll('.ket-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
-          const res = this.dataset.res;
-          const date = this.dataset.date;
-          const entries = FIXED_DATA.map(letter => {
-            const key = `${date}_${letter}`;
-            const s = appData[`${currentMarket}_status`]?.[key] || '?';
-            const sym = s === 'benar' ? '✅' : (s === 'salah' ? '❌' : '?');
-            return `${letter} ${sym}`;
+          // Ambil nilai jari terkini dari input
+          const jari = {};
+          document.querySelectorAll('.jari-input').forEach(input => {
+            const ref = input.dataset.ref;
+            const val = input.value.trim();
+            if (val === 'x' || /^\d{1,2}$/.test(val)) {
+              jari[ref] = val;
+            }
           });
-          document.getElementById('modalText').textContent = `${res} ${entries.join(', ')}`;
-          document.getElementById('ketModal').style.display = 'block';
+          newEntries.push({ date, res, jari });
+        }
+      });
+
+      // Simpan ke Firebase
+      appData[currentMarket].entries = newEntries;
+      dbRef.child(currentMarket).set({ entries: newEntries }).then(() => {
+        alert(`Data ${MARKETS[currentMarket]} berhasil disimpan!`);
+
+        // ✅ PENTING: Kosongkan kolom "jari" di tampilan (UI saja), data tetap tersimpan
+        document.querySelectorAll('.jari-input').forEach(input => {
+          input.value = '';
+        });
+
+        // Refresh Tabel 3 agar tetap akurat
+        renderTable3Only();
+      }).catch(err => {
+        alert('Gagal menyimpan: ' + err.message);
+      });
+    }
+
+    // Render hanya Tabel 3 (setelah simpan)
+    function renderTable3Only() {
+      const tbody3 = document.getElementById('tbody3');
+      tbody3.innerHTML = '';
+
+      const entries = appData[currentMarket].entries;
+      entries.forEach((entry, idx) => {
+        const tr3 = document.createElement('tr');
+        tr3.innerHTML = `
+          <td>${entry.res || ''}</td>
+          <td><span class="lampiran-link" data-idx="${idx}">Lampiran 1</span></td>
+        `;
+        tbody3.appendChild(tr3);
+      });
+
+      document.querySelectorAll('.lampiran-link').forEach(el => {
+        el.addEventListener('click', function() {
+          const idx = this.dataset.idx;
+          const entry = appData[currentMarket].entries[idx];
+          if (!entry) return;
+
+          const items = FIXED_REF.map(ref => {
+            const j = entry.jari?.[ref] || '?';
+            return `${ref} ${j}`;
+          });
+          document.getElementById('popupTitle').textContent = `${entry.res} - Lampiran`;
+          document.getElementById('popupContent').textContent = `${entry.res} ${items.join(', ')}`;
+          document.getElementById('popupModal').style.display = 'block';
         });
       });
-    }
-
-    function saveHistoryStatus() {
-      const statusData = {};
-      document.querySelectorAll('.status-cell').forEach(cell => {
-        const key = cell.dataset.key;
-        const txt = cell.textContent.trim();
-        statusData[key] = txt === '✅' ? 'benar' : (txt === '❌' ? 'salah' : '?');
-      });
-      appData[`${currentMarket}_status`] = statusData;
-      saveToFirebase();
-      alert(`Status ${MARKET_NAMES[currentMarket]} berhasil disimpan!`);
-    }
-
-    // === FITUR 3 ===
-    function editPrediction() {
-      document.getElementById('predictionArea').readOnly = false;
-      document.getElementById('predictionArea').focus();
-    }
-
-    function savePrediction() {
-      appData.prediction = document.getElementById('predictionArea').value;
-      saveToFirebase();
-      document.getElementById('predictionArea').readOnly = true;
-      alert('Prediksi berhasil disimpan!');
     }
 
     function closeModal() {
-      document.getElementById('ketModal').style.display = 'none';
+      document.getElementById('popupModal').style.display = 'none';
     }
 
-    window.onclick = function(event) {
-      if (event.target === document.getElementById('ketModal')) closeModal();
+    window.onclick = function(e) {
+      if (e.target === document.getElementById('popupModal')) closeModal();
     };
   </script>
 </body>
