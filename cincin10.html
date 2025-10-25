@@ -271,12 +271,22 @@
       });
       isFirebaseReady = true;
 
-      if (document.getElementById('market-form').classList.contains('hidden') === false) {
+      // Render ulang form input jika sedang aktif
+      if (!document.getElementById('market-form').classList.contains('hidden')) {
         if (document.getElementById('market-title').textContent.includes(MARKET_NAMES[currentMarket])) {
           renderInputTable();
         }
       }
-      if (document.getElementById('feature3').classList.contains('hidden') === false) {
+
+      // ✅ PERBAIKAN: Render ulang riwayat jika sedang aktif
+      if (!document.getElementById('history-detail').classList.contains('hidden')) {
+        if (document.getElementById('history-title').textContent.includes(MARKET_NAMES[currentMarket])) {
+          renderHistoryTable();
+        }
+      }
+
+      // Prediksi
+      if (!document.getElementById('feature3').classList.contains('hidden')) {
         document.getElementById('predictionArea').value = appData.prediction;
       }
     });
@@ -307,14 +317,12 @@
       const tbody = document.getElementById('input-body');
       tbody.innerHTML = '';
       const data = appData[currentMarket] || [];
-      // Tampilkan data yang sudah ada (dari atas ke bawah)
       data.forEach(item => {
         const d = new Date(item.date);
         const dayName = DAYS[d.getDay()];
         const row = createRow(item.date, dayName, item.res, false);
         tbody.appendChild(row);
       });
-      // Tambahkan satu baris kosong DI ATAS
       const emptyRow = createRow('', '', '', true);
       tbody.insertBefore(emptyRow, tbody.firstChild);
     }
@@ -340,7 +348,6 @@
       return tr;
     }
 
-    // ✅ DIPERBAIKI: tambah baris DI ATAS
     function addEmptyRow() {
       const tbody = document.getElementById('input-body');
       const emptyRow = createRow('', '', '', true);
