@@ -107,7 +107,14 @@
       <button id="btnLogout" style="display:none;">Logout</button>
       <button id="btnLogin">Login</button>
     </div>
-  </header>
+  </header><div style="text-align:center; margin:15px 0; padding:12px; background:#e3f2fd; border-radius:8px;">
+  <h3>📡 Cek Pertandingan Hari Ini</h3>
+  <button onclick="cekPertandinganHariIni()" class="btn-primary" style="padding:8px 20px; background:#1a73e8; color:white; border:none; border-radius:6px; cursor:pointer;">
+    🔍 Ambil Data Live dari football-data.org
+  </button>
+  <div id="liveStatus" style="margin-top:10px; min-height:24px; font-weight:bold;"></div>
+</div>
+  
 
   <div id="loginForm">
     <h3>Login Email</h3>
@@ -891,7 +898,40 @@
         });
       });
     });
+    // === FUNGSI AMAN: AMBIL LIVE MATCH DATA DARI CLOUD FUNCTION ===
+async function cekPertandinganHariIni() {
+  const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  const statusEl = document.getElementById('liveStatus');
+  statusEl.innerHTML = 'Loading...';
+  
+  try {
+    const response = await fetch(`https://asia-southeast1-parlaypribadi.cloudfunctions.net/getMatches?date=${today}`);
+    const data = await response.json();
+
+    if (!data || !data.matches || data.matches.length === 0) {
+      statusEl.innerHTML = 'ℹ️ Tidak ada pertandingan hari ini.';
+      return;
+    }
+
+    let html = `<strong>✅ Ditemukan ${data.matches.length} pertandingan hari ini:</strong><ul style="text-align:left; margin-top:10px;">`;
+    data.matches.forEach(match => {
+      const home = match.homeTeam.name;
+      const away = match.awayTeam.name;
+      const score = match.score.fullTime.home !== null 
+        ? `${match.score.fullTime.home} - ${match.score.fullTime.away}`
+        : 'Belum dimulai';
+      const status = match.status;
+      html += `<li><strong>${home} vs ${away}</strong> — ${score} (${status})</li>`;
+    });
+    html += '</ul>';
+    statusEl.innerHTML = html;
+  } catch (err) {
+    console.error("Error fetching live data:", err);
+    statusEl.innerHTML = `❌ Gagal ambil data: ${err.message || 'Cek koneksi atau Cloud Function.'}`;
+  }
+}
   </script>
 </body>
 
 </html>
+
