@@ -891,7 +891,51 @@
           document.getElementById(button.dataset.section).classList.add('active');
         });
       });
+    });// === INTEGRASI FOOTBALL-DATA.ORG (FRONTEND LANGSUNG) ===
+window.ambilDataHariIni = async function() {
+  const API_KEY ="f2c36d66eb9b006d637e6fd01ddb1d79'; // 
+  const today = new Date().toISOString().split('T')[0];
+  const resultEl = document.getElementById('liveResult');
+  if (!resultEl) {
+    alert("Area hasil tidak ditemukan!");
+    return;
+  }
+  resultEl.innerHTML = '📡 Mengambil data...';
+
+  try {
+    const res = await fetch(`https://api.football-data.org/v4/matches?dateFrom=${today}&dateTo=${today}`, {
+      headers: { "X-Auth-Token": API_KEY }
     });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}...`);
+    }
+
+    const data = await res.json();
+    if (!data.matches || data.matches.length === 0) {
+      resultEl.innerHTML = 'ℹ️ Tidak ada pertandingan hari ini.';
+      return;
+    }
+
+    let html = `<strong>✅ Ditemukan ${data.matches.length} pertandingan:</strong><ul style="text-align:left;margin-top:10px;">`;
+    data.matches.forEach(m => {
+      const home = m.homeTeam.name || 'Tim A';
+      const away = m.awayTeam.name || 'Tim B';
+      const score = (m.score.fullTime.home !== null && m.score.fullTime.away !== null)
+        ? `${m.score.fullTime.home}–${m.score.fullTime.away}`
+        : 'Belum dimulai';
+      html += `<li><strong>${home} vs ${away}</strong> → ${score} <em>(${m.status})</em></li>`;
+    });
+    html += '</ul>';
+    resultEl.innerHTML = html;
+  } catch (err) {
+    console.error("[Live Data Error]", err);
+    resultEl.innerHTML = `❌ Gagal ambil data: ${err.message || 'Cek koneksi/API key.'}`;
+  }
+};
+    
   </script>
 </body>
 </html>
+
