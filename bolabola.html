@@ -231,7 +231,14 @@
   <div id="serba" class="section">
     <h2>5. Serba Serbi</h2>
     <p>▶️ Koleksi alat bantu: konversi odds, kalkulator ROI, panduan threshold, dll.</p>
-  </div>
+  </div><div style="text-align:center; margin:20px;">
+  <button onclick="ambilDataHariIni()" style="padding:10px 20px; background:#1a73e8; color:white; border:none; border-radius:6px;">
+    📡 Ambil Data Pertandingan Hari Ini
+  </button>
+  <div id="liveResult" style="margin-top:15px; min-height:24px;"></div>
+</div>
+  
+  
 
   <script>
     // === FIREBASE CONFIG BARU ===
@@ -929,9 +936,52 @@ async function cekPertandinganHariIni() {
     console.error("Error fetching live data:", err);
     statusEl.innerHTML = `❌ Gagal ambil data: ${err.message || 'Cek koneksi atau Cloud Function.'}`;
   }
+}async function ambilDataHariIni() {
+  const API_KEY = "f2c36d66eb9b006d637e6fd01ddb1d79';
+// ← TEMPATKAN TOKEN ANDA DI SINI
+  const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  const url = `https://api.football-data.org/v4/matches?dateFrom=${today}&dateTo=${today}`;
+  const resultEl = document.getElementById('liveResult');
+  resultEl.innerHTML = 'Loading...';
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "X-Auth-Token": API_KEY
+      }
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Error ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+    if (!data.matches || data.matches.length === 0) {
+      resultEl.innerHTML = 'ℹ️ Tidak ada pertandingan hari ini.';
+      return;
+    }
+
+    let html = `<strong>✅ Ditemukan ${data.matches.length} pertandingan:</strong><ul style="text-align:left;">`;
+    data.matches.forEach(m => {
+      const home = m.homeTeam.name;
+      const away = m.awayTeam.name;
+      const score = m.score.fullTime.home !== null 
+        ? `${m.score.fullTime.home} - ${m.score.fullTime.away}`
+        : 'Belum dimulai';
+      html += `<li>${home} vs ${away} → ${score} (${m.status})</li>`;
+    });
+    html += '</ul>';
+    resultEl.innerHTML = html;
+  } catch (err) {
+    console.error("Error:", err);
+    resultEl.innerHTML = `❌ Gagal ambil data: ${err.message}`;
+  }
 }
+    
   </script>
 </body>
 
 </html>
+
 
