@@ -738,13 +738,15 @@
           let resultHTML = "";
           hasilList.forEach((h, idx) => {
             resultHTML += `
-              <div class="match">
-                <h3>Pertandingan ${idx + 1}</h3>
-                <p><strong>Probabilitas:</strong> Tim A: ${h.persentase.timA} | Draw: ${h.persentase.draw} | Tim B: ${h.persentase.timB}</p>
-                <p><strong>Analisis:</strong> <span class="label">${h.label}</span></p>
-                <p><strong>Pilihan:</strong> ${h.pilihan} (${(h.probPilihan * 100).toFixed(2)}%)</p>
-              </div>`;
-          });
+            const namaA = document.getElementById(`teamA${idx + 1}`)?.value.trim() || "Tim A";
+const namaB = document.getElementById(`teamB${idx + 1}`)?.value.trim() || "Tim B";
+resultHTML += `
+  <div class="match">
+    <h3>Pertandingan ${idx + 1}: ${namaA} vs ${namaB}</h3>
+    <p><strong>Probabilitas:</strong> ${namaA}: ${h.persentase.timA} | Draw: ${h.persentase.draw} | ${namaB}: ${h.persentase.timB}</p>
+    <p><strong>Analisis:</strong> <span class="label">${h.label.replace("Tim A", namaA).replace("Tim B", namaB)}</span></p>
+    <p><strong>Pilihan:</strong> ${h.pilihan === "Tim A" ? namaA : (h.pilihan === "Tim B" ? namaB : "Draw")} (${(h.probPilihan * 100).toFixed(2)}%)</p>
+  </div>`; 
 
           if (jumlahPertandingan === 1) {
             resultHTML += `<div class="parlay-result"><h2>ℹ️ Analisis Tunggal</h2><p>Hanya 1 pertandingan → tidak ada parlay atau EV.</p></div>`;
@@ -893,4 +895,5 @@
     });
   </script>
 </body>
+
 </html>
