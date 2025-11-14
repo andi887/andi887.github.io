@@ -182,7 +182,7 @@
       <h3>📉 Pertandingan Under</h3>
       <ul id="list-under"></ul>
     </div>
-    <p><em>Rekomendasi diambil otomatis dari data terakhir di <strong>Fitur 1</strong>.</em></p>
+    <p><em>Rekomendasi hanya ditampilkan jika probabilitas ≥67% (Win) atau ≥60% (Over/Under).</em></p>
   </div>
   <div id="serba" class="section">
     <h2>5. Serba Serbi</h2>
@@ -249,7 +249,7 @@
       }
     });
 
-    // === FITUR 1 — DIPERBARUI SESUAI PERMINTAAN ===
+    // === FITUR 1 — DIPERBARUI ===
     window.simpanDataPertandingan = function() {
       if (!currentUser) {
         alert("Harap login terlebih dahulu untuk menyimpan ke cloud.");
@@ -265,7 +265,6 @@
         const oddsB = document.getElementById(`B${i}`)?.value || "0";
         const over = document.getElementById(`O${i}`)?.value || "0";
         const under = document.getElementById(`U${i}`)?.value || "0";
-        // Simpan tanggal yang sama untuk semua pertandingan (opsional)
         data.push({ matchDate, teamA, teamB, oddsA, oddsD, oddsB, over, under });
       }
       firebase.database().ref('users/' + currentUser.uid + '/parlayData').set(data)
@@ -309,7 +308,7 @@
         const over = matchData.over !== undefined ? matchData.over : "0";
         const under = matchData.under !== undefined ? matchData.under : "0";
 
-        // ✅ TAMPILKAN INPUT TANGGAL HANYA DI PERTANDINGAN 1
+        // ✅ HANYA PERTANDINGAN 1 YANG PUNYA INPUT TANGGAL
         let dateInputHtml = "";
         if (i === 1) {
           dateInputHtml = `<div><label>Tanggal:<br><input type="date" id="date1" value="${matchDate}" style="width:120px;text-align:center;"></label></div>`;
@@ -355,7 +354,7 @@
       }
     };
 
-    // === FUNGSI BANTUAN (TIDAK BERUBAH) ===
+    // === FUNGSI BANTUAN ===
     const MAX_MATCHES = 10;
     window.jumlahPertandingan = 1;
 
@@ -452,27 +451,31 @@
       }
     };
 
-    // === FUNGSI LAINNYA (TIDAK DIUBAH) ===
+    // === FITUR 4 — DIPERBARUI DENGAN FILTER ===
     window.tampilkanRekomendasiDiskusi = function() {
-      // (tetap menggunakan localStorage sebagai fallback untuk kompatibilitas)
-      let dataRaw = localStorage.getItem('lastMatchData');
-      if (!dataRaw && window.firebaseParlayData.length > 0) {
-        // Simpan sementara ke localStorage untuk integrasi fitur 2 & 4
-        localStorage.setItem('lastMatchData', JSON.stringify(window.firebaseParlayData));
+      let dataRaw = null;
+      if (window.firebaseParlayData && window.firebaseParlayData.length > 0) {
         dataRaw = JSON.stringify(window.firebaseParlayData);
+      } else {
+        dataRaw = localStorage.getItem('lastMatchData');
       }
+
       if (!dataRaw) {
         document.getElementById('list-win').innerHTML = '<li><em>Belum ada data dari Fitur 1</em></li>';
         document.getElementById('list-over').innerHTML = '<li><em>-</em></li>';
         document.getElementById('list-under').innerHTML = '<li><em>-</em></li>';
         return;
       }
+
       const matches = JSON.parse(dataRaw);
       const winList = [];
       const overList = [];
       const underList = [];
+
       matches.forEach((match, idx) => {
-        const { teamA, teamB, oddsA, oddsD, oddsB } = match;
+        const { teamA, teamB, oddsA, oddsD, oddsB, over, under } = match;
+
+        // === ANALISIS WIN ===
         const pA = 1 / parseFloat(oddsA);
         const pD = 1 / parseFloat(oddsD);
         const pB = 1 / parseFloat(oddsB);
@@ -480,7 +483,8 @@
         const probA = pA / total;
         const probB = pB / total;
         const probD = pD / total;
-        let timPilihan, probPilihan;
+
+        let timPilihan = "", probPilihan = 0;
         if (probA >= probB && probA >= probD) {
           timPilihan = teamA;
           probPilihan = probA;
@@ -491,26 +495,89 @@
           timPilihan = "Draw";
           probPilihan = probD;
         }
-        winList.push(`${timPilihan} (${(probPilihan * 100).toFixed(1)}%)`);
-        const recEl = document.getElementById(`recOU${idx + 1}`);
-        if (recEl) {
-          const text = recEl.textContent;
-          const pertandingan = `${teamA} vs ${teamB}`;
-          if (text.includes("Over")) {
-            overList.push(pertandingan);
-          } else if (text.includes("Under")) {
-            underList.push(pertandingan);
-          }
+
+        // ✅ FILTER WIN ≥67%
+        if (probPilihan >= 0.67) {
+          winList.push(`${timPilihan} (${(probPilihan * 100).toFixed(1)}%)`);
+        }
+
+        // === ANALISIS OVER/UNDER ===
+        const a = parseFloat(oddsA), d = parseFloat(oddsD), b = parseFloat(oddsB);
+        if (isNaN(a) || isNaN(d) || isNaN(b) || a <= 1 || d <= 1 || b <= 1) return;
+
+        const pA_raw = 1 / a, pD_raw = 1 / d, pB_raw = 1 / b;
+        const total_raw = pA_raw + pD_raw + pB_raw;
+        const probA_raw = pA_raw / total_raw;
+        const probD_raw = pD_raw / total_raw;
+        const probB_raw = pB_raw / total_raw;
+
+        let avgGoals;
+        if (probD_raw >= 0.35) avgGoals = 1.8;
+        else if (probD_raw >= 0.25) avgGoals = 2.3;
+        else if (Math.abs(probA_raw - probB_raw) >= 0.3) avgGoals = 3.1;
+        else avgGoals = 2.6;
+
+        const thresholds = { under15: 2.0, under25: 2.5, over25: 2.7, over35: 3.2 };
+        let recommendationType, probOver, probUnder;
+
+        if (avgGoals < thresholds.under15) {
+          recommendationType = "Under";
+          probUnder = 0.52 + (thresholds.under25 - avgGoals) * 0.15;
+          probUnder = Math.min(0.85, Math.max(0.45, probUnder));
+          probOver = 1 - probUnder;
+        } else if (avgGoals < thresholds.under25) {
+          recommendationType = "Under";
+          probUnder = 0.52 + (thresholds.under25 - avgGoals) * 0.15;
+          probUnder = Math.min(0.85, Math.max(0.45, probUnder));
+          probOver = 1 - probUnder;
+        } else if (avgGoals < thresholds.over25) {
+          recommendationType = "Over";
+          probOver = 0.52 + (avgGoals - thresholds.under25) * 0.12;
+          probOver = Math.min(0.85, Math.max(0.45, probOver));
+          probUnder = 1 - probOver;
+        } else if (avgGoals >= thresholds.over35) {
+          recommendationType = "Over";
+          probOver = 0.55 + (avgGoals - thresholds.over35) * 0.12;
+          probOver = Math.min(0.85, Math.max(0.45, probOver));
+          probUnder = 1 - probOver;
+        } else {
+          recommendationType = "Over";
+          probOver = 0.52 + (avgGoals - thresholds.under25) * 0.12;
+          probOver = Math.min(0.85, Math.max(0.45, probOver));
+          probUnder = 1 - probOver;
+        }
+
+        const pertandingan = `${teamA} vs ${teamB}`;
+
+        // ✅ FILTER OVER ≥60%
+        if (recommendationType === "Over" && probOver >= 0.60) {
+          overList.push(pertandingan + ` (${(probOver * 100).toFixed(1)}%)`);
+        }
+        // ✅ FILTER UNDER ≥60%
+        if (recommendationType === "Under" && probUnder >= 0.60) {
+          underList.push(pertandingan + ` (${(probUnder * 100).toFixed(1)}%)`);
         }
       });
+
+      // Render
       const winEl = document.getElementById('list-win');
       const overEl = document.getElementById('list-over');
       const underEl = document.getElementById('list-under');
-      winEl.innerHTML = winList.length ? winList.map(t => `<li>${t}</li>`).join('') : '<li><em>Tidak ada rekomendasi</em></li>';
-      overEl.innerHTML = overList.length ? overList.map(t => `<li>${t}</li>`).join('') : '<li><em>-</em></li>';
-      underEl.innerHTML = underList.length ? underList.map(t => `<li>${t}</li>`).join('') : '<li><em>-</em></li>';
+
+      winEl.innerHTML = winList.length 
+        ? winList.map(t => `<li>${t}</li>`).join('') 
+        : '<li><em>Tidak ada rekomendasi Win ≥67%</em></li>';
+
+      overEl.innerHTML = overList.length 
+        ? overList.map(t => `<li>${t}</li>`).join('') 
+        : '<li><em>Tidak ada rekomendasi Over ≥60%</em></li>';
+
+      underEl.innerHTML = underList.length 
+        ? underList.map(t => `<li>${t}</li>`).join('') 
+        : '<li><em>Tidak ada rekomendasi Under ≥60%</em></li>';
     };
 
+    // === FUNGSI LAINNYA (TIDAK DIUBAH) ===
     window.tampilkanOddsAdil = function() {
       const inputs = [];
       try {
@@ -654,7 +721,6 @@
     function initApp(uid) {
       const userRef = firebase.database().ref('users/' + uid);
 
-      // Muat data Parlay dari Firebase
       userRef.child('parlayData').on('value', (snapshot) => {
         window.firebaseParlayData = Array.isArray(snapshot.val()) ? snapshot.val() : [];
         if (currentUser) {
@@ -676,7 +742,6 @@
             <button class="delete" onclick="hapusTim(${idx})">🗑️ Hapus</button>`;
           ul.appendChild(li);
         });
-        // Ambil data dari Firebase (bukan localStorage)
         const lastData = window.firebaseParlayData.length > 0 ? window.firebaseParlayData : [];
         const allNames = new Set(daftarTim);
         const autoNames = [];
@@ -845,7 +910,7 @@
         }
       });
 
-      // === RIWAYAT EV ===
+      // Riwayat EV
       window.tampilkanRiwayatFirebase = function() {
         userRef.child('evHistory').once('value').then(snapshot => {
           const history = snapshot.val() || [];
@@ -869,7 +934,6 @@
         });
       };
 
-      // Inisialisasi lain...
       window.renderTablesFirebase();
       window.tampilkanRiwayatFirebase();
     }
