@@ -203,6 +203,7 @@
     const auth = firebase.auth();
     let currentUser = null;
     window.firebaseParlayData = [];
+    window.temporaryMatchData = null; // 🔹 Cache sementara input
 
     // === UI AUTH ===
     function updateAuthUI() {
@@ -250,6 +251,23 @@
     });
 
     // === FITUR 1 — DIPERBARUI ===
+    window.simpanInputSementara = function() {
+      const sementara = [];
+      for (let i = 1; i <= window.jumlahPertandingan; i++) {
+        sementara.push({
+          matchDate: i === 1 ? (document.getElementById("date1")?.value || "") : "",
+          teamA: document.getElementById(`teamA${i}`)?.value.trim() || "Tim A",
+          teamB: document.getElementById(`teamB${i}`)?.value.trim() || "Tim B",
+          oddsA: document.getElementById(`A${i}`)?.value || "0",
+          oddsD: document.getElementById(`D${i}`)?.value || "0",
+          oddsB: document.getElementById(`B${i}`)?.value || "0",
+          over: document.getElementById(`O${i}`)?.value || "0",
+          under: document.getElementById(`U${i}`)?.value || "0",
+        });
+      }
+      window.temporaryMatchData = sementara;
+    };
+
     window.simpanDataPertandingan = function() {
       if (!currentUser) {
         alert("Harap login terlebih dahulu untuk menyimpan ke cloud.");
@@ -270,6 +288,7 @@
       firebase.database().ref('users/' + currentUser.uid + '/parlayData').set(data)
         .then(() => {
           window.firebaseParlayData = data;
+          window.temporaryMatchData = null; // 🔹 Reset cache
           alert("✅ Data berhasil disimpan ke Firebase!");
         })
         .catch(err => alert("❌ Gagal menyimpan: " + err.message));
@@ -282,6 +301,7 @@
           .then(() => {
             window.jumlahPertandingan = 1;
             window.firebaseParlayData = [];
+            window.temporaryMatchData = null;
             window.renderPertandingan();
             document.getElementById("hasil").innerHTML = "";
             document.getElementById("fairOddsContainer").style.display = "none";
@@ -290,15 +310,24 @@
       } else {
         localStorage.removeItem('lastMatchData');
         window.jumlahPertandingan = 1;
+        window.temporaryMatchData = null;
         window.renderPertandingan();
         alert("✅ Data sementara dihapus.");
       }
     };
 
+    const MAX_MATCHES = 10;
+    window.jumlahPertandingan = 1;
+
     window.renderPertandingan = function() {
       let html = "";
       for (let i = 1; i <= window.jumlahPertandingan; i++) {
-        const matchData = window.firebaseParlayData?.[i - 1] || {};
+        let matchData = {};
+        if (window.temporaryMatchData && window.temporaryMatchData[i - 1]) {
+          matchData = window.temporaryMatchData[i - 1];
+        } else if (window.firebaseParlayData && window.firebaseParlayData[i - 1]) {
+          matchData = window.firebaseParlayData[i - 1];
+        }
         const matchDate = matchData.matchDate || "";
         const teamA = matchData.teamA || "Tim A";
         const teamB = matchData.teamB || "Tim B";
@@ -308,7 +337,6 @@
         const over = matchData.over !== undefined ? matchData.over : "0";
         const under = matchData.under !== undefined ? matchData.under : "0";
 
-        // ✅ HANYA PERTANDINGAN 1 YANG PUNYA INPUT TANGGAL
         let dateInputHtml = "";
         if (i === 1) {
           dateInputHtml = `<div><label>Tanggal:<br><input type="date" id="date1" value="${matchDate}" style="width:120px;text-align:center;"></label></div>`;
@@ -344,19 +372,37 @@
         ["A", "D", "B"].forEach(team => {
           const el = document.getElementById(`${team}${i}`);
           if (el) {
-            el.addEventListener("input", () => {
+            const handler = () => {
               updateOverUnder(i);
               document.getElementById("fairOddsContainer").style.display = "none";
-            });
+              window.simpanInputSementara();
+            };
+            // Hapus listener lama agar tidak double
+            el.removeEventListener("input", handler);
+            el.addEventListener("input", handler);
           }
         });
         updateOverUnder(i);
       }
     };
 
-    // === FUNGSI BANTUAN ===
-    const MAX_MATCHES = 10;
-    window.jumlahPertandingan = 1;
+    window.tambahPertandingan = function() {
+      if (window.jumlahPertandingan < MAX_MATCHES) {
+        window.simpanInputSementara();
+        window.jumlahPertandingan++;
+        window.renderPertandingan();
+      } else {
+        alert(`Maksimal ${MAX_MATCHES} pertandingan.`);
+      }
+    };
+
+    window.hapusPertandingan = function() {
+      if (window.jumlahPertandingan > 1) {
+        window.simpanInputSementara();
+        window.jumlahPertandingan--;
+        window.renderPertandingan();
+      }
+    };
 
     window.hitungOddsAdil = function(oddsA, oddsDraw, oddsB) {
       const pA = 1 / oddsA;
@@ -435,27 +481,13 @@
       }
     };
 
-    window.tambahPertandingan = function() {
-      if (window.jumlahPertandingan < MAX_MATCHES) {
-        window.jumlahPertandingan++;
-        renderPertandingan();
-      } else {
-        alert(`Maksimal ${MAX_MATCHES} pertandingan.`);
-      }
-    };
-
-    window.hapusPertandingan = function() {
-      if (window.jumlahPertandingan > 1) {
-        window.jumlahPertandingan--;
-        renderPertandingan();
-      }
-    };
-
-    // === FITUR 4 — DIPERBARUI DENGAN FILTER ===
+    // === FITUR 4 — FILTERED REKOMENDASI ===
     window.tampilkanRekomendasiDiskusi = function() {
       let dataRaw = null;
       if (window.firebaseParlayData && window.firebaseParlayData.length > 0) {
         dataRaw = JSON.stringify(window.firebaseParlayData);
+      } else if (window.temporaryMatchData && window.temporaryMatchData.length > 0) {
+        dataRaw = JSON.stringify(window.temporaryMatchData);
       } else {
         dataRaw = localStorage.getItem('lastMatchData');
       }
@@ -496,7 +528,6 @@
           probPilihan = probD;
         }
 
-        // ✅ FILTER WIN ≥67%
         if (probPilihan >= 0.67) {
           winList.push(`${timPilihan} (${(probPilihan * 100).toFixed(1)}%)`);
         }
@@ -548,18 +579,14 @@
         }
 
         const pertandingan = `${teamA} vs ${teamB}`;
-
-        // ✅ FILTER OVER ≥60%
         if (recommendationType === "Over" && probOver >= 0.60) {
           overList.push(pertandingan + ` (${(probOver * 100).toFixed(1)}%)`);
         }
-        // ✅ FILTER UNDER ≥60%
         if (recommendationType === "Under" && probUnder >= 0.60) {
           underList.push(pertandingan + ` (${(probUnder * 100).toFixed(1)}%)`);
         }
       });
 
-      // Render
       const winEl = document.getElementById('list-win');
       const overEl = document.getElementById('list-over');
       const underEl = document.getElementById('list-under');
@@ -742,7 +769,9 @@
             <button class="delete" onclick="hapusTim(${idx})">🗑️ Hapus</button>`;
           ul.appendChild(li);
         });
-        const lastData = window.firebaseParlayData.length > 0 ? window.firebaseParlayData : [];
+        const lastData = window.firebaseParlayData.length > 0 
+          ? window.firebaseParlayData 
+          : (window.temporaryMatchData || []);
         const allNames = new Set(daftarTim);
         const autoNames = [];
         lastData.forEach(match => {
@@ -794,7 +823,7 @@
         window.renderDaftarTim();
       });
 
-      // === NOTES & TABEL ===
+      // === NOTES, TABEL, EV HISTORY (TIDAK DIUBAH) ===
       document.getElementById('saveNotes').addEventListener('click', () => {
         const notes = {
           1: document.getElementById('note1').value.trim(),
@@ -910,7 +939,6 @@
         }
       });
 
-      // Riwayat EV
       window.tampilkanRiwayatFirebase = function() {
         userRef.child('evHistory').once('value').then(snapshot => {
           const history = snapshot.val() || [];
