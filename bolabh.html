@@ -168,7 +168,7 @@
       </div>
     </div>
   </div>
-  <!-- Diskusi — DIPERBARUI -->
+  <!-- Diskusi -->
   <div id="diskusi" class="section">
     <h2>4. Room Diskusi — Ringkasan Rekomendasi Otomatis</h2>
     <div id="rekomendasi-win" class="rekom-box">
@@ -190,7 +190,7 @@
     <p>▶️ Koleksi alat bantu: konversi odds, kalkulator ROI, panduan threshold, dll.</p>
   </div>
   <script>
-    // === FIREBASE CONFIG BARU ===
+    // === FIREBASE CONFIG ===
     const firebaseConfig = {
       apiKey: "AIzaSyC5knp2eCkE4pzuNRodN5SgGhaq_H416vE",
       authDomain: "parlaypribadi.firebaseapp.com",
@@ -202,9 +202,10 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const database = firebase.database();
     let currentUser = null;
-    // === UI LOGIN/LOGOUT ===
+    window.sudahDiinisialisasiParlay = false;
+
+    // === UI AUTH ===
     function updateAuthUI() {
       const loginForm = document.getElementById('loginForm');
       const nav = document.getElementById('mainNav');
@@ -226,22 +227,25 @@
         nav.style.display = 'none';
       }
     }
+
     document.getElementById('btnLogin').onclick = () => {
       document.getElementById('loginForm').style.display = 'block';
     };
+
     document.getElementById('btnLogout').onclick = () => {
       auth.signOut().then(() => {
         currentUser = null;
         updateAuthUI();
       });
     };
+
     function login() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
       auth.signInWithEmailAndPassword(email, password)
         .catch(err => alert("Login gagal: " + err.message));
     }
-    // === TUNGGU USER LOGIN ===
+
     auth.onAuthStateChanged(user => {
       currentUser = user;
       updateAuthUI();
@@ -249,7 +253,8 @@
         initApp(user.uid);
       }
     });
-    // ✅ FUNGSI SIMPAN DATA FITUR 1
+
+    // === FITUR 1 ===
     window.simpanDataPertandingan = function() {
       const data = [];
       for (let i = 1; i <= window.jumlahPertandingan; i++) {
@@ -264,11 +269,11 @@
       alert("✅ Data pertandingan tersimpan sementara (untuk integrasi ke Tim Favorit)");
     };
 
-    // ✅ FUNGSI HAPUS DATA FITUR 1
     window.hapusDataParlay = function() {
       if (confirm("Yakin ingin menghapus semua data pertandingan di Fitur 1?")) {
         localStorage.removeItem('lastMatchData');
         window.jumlahPertandingan = 1;
+        window.sudahDiinisialisasiParlay = false;
         window.renderPertandingan();
         document.getElementById("hasil").innerHTML = "";
         document.getElementById("fairOddsContainer").style.display = "none";
@@ -276,7 +281,6 @@
       }
     };
 
-    // === FUNGSI BARU: TAMPILKAN REKOMENDASI DI FITUR 4 ===
     window.tampilkanRekomendasiDiskusi = function() {
       const dataRaw = localStorage.getItem('lastMatchData');
       if (!dataRaw) {
@@ -329,13 +333,13 @@
       underEl.innerHTML = underList.length ? underList.map(t => `<li>${t}</li>`).join('') : '<li><em>-</em></li>';
     };
 
-    // === FUNGSI UTAMA APLIKASI (DIAKTIFKAN SETELAH LOGIN) ===
     function initApp(uid) {
       const userRef = firebase.database().ref('users/' + uid);
+
       // =============== TIM FAVORIT ===============
       let daftarTim = [];
       let sedangMengedit = null;
-      function renderDaftarTim() {
+      window.renderDaftarTim = function() {
         const ul = document.getElementById('daftarTim');
         ul.innerHTML = '';
         daftarTim.forEach((tim, idx) => {
@@ -363,7 +367,7 @@
           li.innerHTML = `<span style="flex:1;color:#555;">${name} <em>(otomatis dari Fitur 1)</em></span>`;
           ul.appendChild(li);
         });
-      }
+      };
       function simpanDaftarFavoritKeFirebase() {
         userRef.child('timFavorit').set(daftarTim);
       }
@@ -379,7 +383,7 @@
           daftarTim.push(nama);
         }
         input.value = '';
-        renderDaftarTim();
+        window.renderDaftarTim();
         simpanDaftarFavoritKeFirebase();
       };
       window.mulaiEdit = function(idx) {
@@ -389,12 +393,12 @@
       window.hapusTim = function(idx) {
         daftarTim.splice(idx, 1);
         if (sedangMengedit === idx) sedangMengedit = null;
-        renderDaftarTim();
+        window.renderDaftarTim();
         simpanDaftarFavoritKeFirebase();
       };
       userRef.child('timFavorit').on('value', (snapshot) => {
         daftarTim = Array.isArray(snapshot.val()) ? snapshot.val() : [];
-        renderDaftarTim();
+        window.renderDaftarTim();
       });
 
       // =============== NOTES & TABEL ===============
@@ -414,7 +418,6 @@
           document.getElementById(`note${i}`).value = notes[i] || '';
         });
       });
-
       window.renderTablesFirebase = function() {
         const notesMap = {};
         userRef.child('notes').once('value').then(snapshot => {
@@ -495,7 +498,6 @@
           });
         });
       };
-
       document.getElementById('saveTables').addEventListener('click', () => {
         const inputs = document.querySelectorAll('#tablesContainer input[data-row="0"]');
         const tablesData = Array(9).fill().map(() => [[null, null], [null, null], [null, null]]);
@@ -506,7 +508,6 @@
         });
         userRef.child('tables').set(tablesData);
       });
-
       document.getElementById('deleteAll').addEventListener('click', () => {
         if (confirm('Hapus semua data permanen?')) {
           userRef.remove().then(() => location.reload());
@@ -537,7 +538,6 @@
           });
         });
       };
-
       window.simpanKeRiwayatFirebase = function(data) {
         const historyRef = userRef.child('evHistory');
         historyRef.once('value').then(snapshot => {
@@ -551,7 +551,6 @@
           historyRef.set(history).then(() => window.tampilkanRiwayatFirebase());
         });
       };
-
       window.editEntry = function(index) {
         userRef.child('evHistory').once('value').then(snapshot => {
           const history = snapshot.val() || [];
@@ -570,7 +569,6 @@
           document.getElementById('hasil-ev').style.display = 'none';
         });
       };
-
       window.hapusEntry = function(index) {
         userRef.child('evHistory').once('value').then(snapshot => {
           const history = snapshot.val() || [];
@@ -578,17 +576,15 @@
           userRef.child('evHistory').set(history).then(() => window.tampilkanRiwayatFirebase());
         });
       };
-
       document.getElementById('clearHistory').addEventListener('click', () => {
         if (confirm('Hapus semua riwayat?')) {
           userRef.child('evHistory').remove().then(() => window.tampilkanRiwayatFirebase());
         }
       });
 
-      // =============== FUNGSI PARLAY (LOKAL) ===============
-      let jumlahPertandingan = 1;
-      window.jumlahPertandingan = jumlahPertandingan;
+      // =============== PARLAY ===============
       const MAX_MATCHES = 10;
+      window.jumlahPertandingan = 1;
 
       window.hitungOddsAdil = function(oddsA, oddsDraw, oddsB) {
         const pA = 1 / oddsA;
@@ -660,25 +656,25 @@
       };
 
       window.renderPertandingan = function() {
-        // 🔁 Muat dari localStorage
-        const savedData = JSON.parse(localStorage.getItem('lastMatchData')) || null;
-        if (savedData && Array.isArray(savedData) && savedData.length > 0) {
-          jumlahPertandingan = Math.min(savedData.length, MAX_MATCHES);
-          window.jumlahPertandingan = jumlahPertandingan;
-        } else {
-          jumlahPertandingan = 1;
-          window.jumlahPertandingan = 1;
+        if (!window.sudahDiinisialisasiParlay) {
+          const savedData = JSON.parse(localStorage.getItem('lastMatchData')) || null;
+          if (savedData && Array.isArray(savedData) && savedData.length > 0) {
+            window.jumlahPertandingan = Math.min(savedData.length, MAX_MATCHES);
+          } else {
+            window.jumlahPertandingan = 1;
+          }
+          window.sudahDiinisialisasiParlay = true;
         }
 
         let html = "";
-        for (let i = 1; i <= jumlahPertandingan; i++) {
-          const data = savedData && savedData[i - 1] ? savedData[i - 1] : null;
+        for (let i = 1; i <= window.jumlahPertandingan; i++) {
+          const savedData = JSON.parse(localStorage.getItem('lastMatchData')) || [];
+          const data = savedData[i - 1] || null;
           const teamA = data?.teamA || "Tim A";
           const teamB = data?.teamB || "Tim B";
           const oddsA = data?.oddsA || "2.00";
           const oddsD = data?.oddsD || "3.20";
           const oddsB = data?.oddsB || "4.00";
-
           html += `
             <div class="match">
               <h3>Pertandingan ${i}</h3>
@@ -703,8 +699,7 @@
             </div>`;
         }
         document.getElementById("matches").innerHTML = html;
-
-        for (let i = 1; i <= jumlahPertandingan; i++) {
+        for (let i = 1; i <= window.jumlahPertandingan; i++) {
           ["A", "D", "B"].forEach(team => {
             const el = document.getElementById(`${team}${i}`);
             if (el) {
@@ -719,17 +714,17 @@
       };
 
       window.tambahPertandingan = function() {
-        if (jumlahPertandingan < MAX_MATCHES) {
-          jumlahPertandingan++;
-          window.jumlahPertandingan = jumlahPertandingan;
+        if (window.jumlahPertandingan < MAX_MATCHES) {
+          window.jumlahPertandingan++;
           renderPertandingan();
-        } else alert(`Maksimal ${MAX_MATCHES} pertandingan.`);
+        } else {
+          alert(`Maksimal ${MAX_MATCHES} pertandingan.`);
+        }
       };
 
       window.hapusPertandingan = function() {
-        if (jumlahPertandingan > 1) {
-          jumlahPertandingan--;
-          window.jumlahPertandingan = jumlahPertandingan;
+        if (window.jumlahPertandingan > 1) {
+          window.jumlahPertandingan--;
           renderPertandingan();
         }
       };
@@ -737,7 +732,7 @@
       window.tampilkanOddsAdil = function() {
         const inputs = [];
         try {
-          for (let i = 1; i <= jumlahPertandingan; i++) {
+          for (let i = 1; i <= window.jumlahPertandingan; i++) {
             const a = parseFloat(document.getElementById(`A${i}`).value);
             const d = parseFloat(document.getElementById(`D${i}`).value);
             const b = parseFloat(document.getElementById(`B${i}`).value);
@@ -784,7 +779,7 @@
       window.hitungParlay = function() {
         const pertandingan = [];
         try {
-          for (let i = 1; i <= jumlahPertandingan; i++) {
+          for (let i = 1; i <= window.jumlahPertandingan; i++) {
             const a = parseFloat(document.getElementById(`A${i}`).value);
             const d = parseFloat(document.getElementById(`D${i}`).value);
             const b = parseFloat(document.getElementById(`B${i}`).value);
@@ -805,7 +800,7 @@
                 <p><strong>Pilihan:</strong> ${h.pilihan === "Tim A" ? namaA : (h.pilihan === "Tim B" ? namaB : "Draw")} (${(h.probPilihan * 100).toFixed(2)}%)</p>
               </div>`;
           });
-          if (jumlahPertandingan === 1) {
+          if (window.jumlahPertandingan === 1) {
             resultHTML += `<div class="parlay-result"><h2>ℹ️ Analisis Tunggal</h2><p>Hanya 1 pertandingan → tidak ada parlay atau EV.</p></div>`;
           } else {
             const probGabungan = hasilList.reduce((acc, h) => acc * h.probPilihan, 1);
@@ -873,21 +868,19 @@
         };
       };
 
-      // =============== SKETSA BIL: EV & INPUT ===============
+      // =============== SKETSA BIL ===
       window.tambahBaris = function() {
         const div = document.createElement("div");
         div.className = "input-row";
         div.innerHTML = `<input type="text" class="odds" placeholder="Odds" /><input type="text" class="prob" placeholder="Prob" />`;
         document.getElementById("inputs").appendChild(div);
       };
-
       window.parseProb = function(val) {
         let num = parseFloat(val.trim());
         if (isNaN(num)) return null;
         if (num > 1) return num / 100;
         return num;
       };
-
       window.hitungEV = function() {
         const oddsInputs = document.querySelectorAll(".odds");
         const probInputs = document.querySelectorAll(".prob");
@@ -930,7 +923,7 @@
       window.tampilkanRiwayatFirebase();
     }
 
-    // === NAVIGASI TAB + TRIGGER FITUR 4 ===
+    // === NAVIGASI ===
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('#mainNav button').forEach(button => {
         button.addEventListener('click', () => {
@@ -939,16 +932,20 @@
           button.classList.add('active');
           const target = document.getElementById(button.dataset.section);
           target.classList.add('active');
-          // 🔁 Trigger Fitur 1 saat kembali ke parlay
           if (button.dataset.section === 'parlay') {
             if (typeof window.renderPertandingan === 'function') {
               window.renderPertandingan();
             }
           }
-          // 🔁 Trigger rekomendasi saat buka Fitur 4
           if (button.dataset.section === 'diskusi') {
             if (typeof window.tampilkanRekomendasiDiskusi === 'function') {
               window.tampilkanRekomendasiDiskusi();
+            }
+          }
+          // ✅ PERBAIKAN FITUR 2: panggil render saat buka tab
+          if (button.dataset.section === 'favorit') {
+            if (typeof window.renderDaftarTim === 'function') {
+              window.renderDaftarTim();
             }
           }
         });
